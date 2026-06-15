@@ -1,0 +1,83 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run CreateMakefile Windows",
+			"type": "process",
+			"command": "C:\\Programming\\FreeBASIC Projects\\ProgrammingStyle\\bin\\Debug\\x64\\CreateMakefile.exe",
+			"args": [
+				/* "-makefile", "Makefile", */
+				"-src", "src",
+				/* "-fbc-path", "C:\\Program Files (x86)\\FreeBASIC-1.10.1-winlibs-gcc-9.3.0", */
+				"-fbc-path", "C:\\Programming\\FreeBASIC Projects\\fbc-modified\\bin\\Release\\x64",
+				/* include path */
+				"-i", "C:\\Program Files (x86)\\FreeBASIC-1.10.1-winlibs-gcc-9.3.0\\inc",
+				"-fbc", "fbc64.exe",
+				"-out", "windows",
+				/* Main module filename */
+				"-module", "WinMain",
+				"-exetype", "exe",
+				/* console, windows, native */
+				"-subsystem", "windows",
+				"-emitter", "gcc",
+				"-fix", "true",
+				"-unicode", "true",
+				"-wrt", "true",
+				"-addressaware", "true",
+				"-multithreading", "false",
+				"-usefilesuffix", "true",
+				"-pedantic", "true",
+				"-create-environment-file", "true",
+				"-winver", "1280",
+			],
+			"problemMatcher": [],
+			"group": {
+				"kind":"build",
+				"isDefault": false
+			}
+		},
+		{
+			"label": "Build CreateMakefile Windows",
+			"type": "process",
+			"command": "C:\\Program Files (x86)\\FreeBASIC-1.10.1-winlibs-gcc-9.3.0\\fbc64.exe",
+			"args": [
+				"-i", "C:\\Program Files (x86)\\FreeBASIC-1.10.1-winlibs-gcc-9.3.0\\inc",
+				"-m", "CreateMakefile",
+				"-x", "bin\\Debug\\x64\\CreateMakefile.exe",
+				"-gen", "gcc",
+				"-O", "0",
+				"-g",
+				"-v",
+				"CreateMakefile\\CreateMakefile.bas",
+			],
+			"problemMatcher": [],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"label": "Build CreateMakefile Linux",
+			"type": "process",
+			/* "command": "/home/mabu/Загрузки/FreeBASIC-1.10.1-ubuntu-18.04-x86_64/bin/fbc", */
+			"command": "fbc",
+			"args": [
+				"-m", "CreateMakefile",
+				"-x", "CreateMakefile.exe",
+				"-gen", "gcc",
+				"-O", "0",
+				"-g",
+				"CreateMakefile/CreateMakefile.bas",
+			],
+			"options": {
+				"cwd": "./"
+			},
+			/* Оставляем как есть */
+			"problemMatcher": [],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+		},
+	]
+}
