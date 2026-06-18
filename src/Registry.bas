@@ -72,9 +72,10 @@ Function LoadSettings( _
 					pVector[i].Value.Length = cbReadedBytes
 
 			End Select
+
+			pVector[i].Value.ErrorCode = 0
 		Else
-			pVector[i].Value.Value32 = 0
-			pVector[i].Value.Length = 0
+			pVector[i].Value.ErrorCode = resQuery
 		End If
 	Next
 

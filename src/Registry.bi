@@ -28,6 +28,7 @@ Type ValueItem
 		Buffer As WZString * (SettingsValueItemMaxLength + 1)
 		Bytes(0 To SettingsValueItemMaxLength - 1) As Byte
 	End Union
+	ErrorCode As Integer
 	ControlId As Integer
 End Type
 
