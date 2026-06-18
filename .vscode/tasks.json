@@ -8,12 +8,11 @@
 			"args": [
 				/* "-makefile", "Makefile", */
 				"-src", "src",
-				/* "-fbc-path", "C:\\Program Files (x86)\\FreeBASIC-1.10.1-winlibs-gcc-9.3.0", */
-				"-fbc-path", "C:\\Programming\\FreeBASIC Projects\\fbc-modified\\bin\\Release\\x64",
+				"-fbc-path", "C:\\Program Files (x86)\\FreeBASIC-1.10.1-winlibs-gcc-9.3.0",
 				/* include path */
 				"-i", "C:\\Program Files (x86)\\FreeBASIC-1.10.1-winlibs-gcc-9.3.0\\inc",
 				"-fbc", "fbc64.exe",
-				"-out", "windows",
+				"-out", "cmf-gui",
 				/* Main module filename */
 				"-module", "WinMain",
 				"-exetype", "exe",
