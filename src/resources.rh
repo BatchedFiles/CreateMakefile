@@ -1,0 +1,47 @@
+
+#ifndef RESOURCES_RH
+#define RESOURCES_RH
+
+#define VER_FILEVERSION              1,0,0,0
+#define VER_FILEVERSION_STR          "1.0.0.0"
+
+#define VER_PRODUCTVERSION           1,0,0,0
+#define VER_PRODUCTVERSION_STR       "1.0.0.0"
+
+#ifndef DEBUG
+#define VER_DEBUG                    0
+#else
+#define VER_DEBUG                    VS_FF_DEBUG
+#endif
+
+#ifndef PRIVATEBUILD
+#define VER_PRIVATEBUILD             0
+#else
+#define VER_PRIVATEBUILD             VS_FF_PRIVATEBUILD
+#endif
+
+#ifndef PRERELEASE
+#define VER_PRERELEASE               0
+#else
+#define VER_PRERELEASE               VS_FF_PRERELEASE
+#endif
+
+#ifndef SPECIALBUILD
+#define VER_SPECIALBUILD             0
+#else
+#define VER_SPECIALBUILD             VS_FF_SPECIALBUILD
+#endif
+
+#define IDR_RT_MANIFEST1                 1
+
+#define IDS_FILTER                      16
+#define IDS_SELECTFILE                  17
+#define IDS_SELECTFOLDER                18
+
+#define IDD_DLG_MAIN                 10000
+#define IDC_TXT_COMPILER             10001
+#define IDC_SELECT_COMPILER          10002
+#define IDC_TXT_PROJECTPATH          10003
+#define IDC_SELECT_PROJECTPATH       10004
+
+#endif
