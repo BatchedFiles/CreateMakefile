@@ -725,7 +725,7 @@ Private Function WriteSetenvWin32( _
 	Print #oStream, "rem set FLTO=-flto"
 
 	Print #oStream, "rem Only for wasm"
-	Print #oStream, "set TARGET_TRIPLET=wasm32"
+	Print #oStream, "rem set TARGET_TRIPLET=wasm32"
 	Print #oStream,
 
 	Print #oStream, "rem Libraries list"
