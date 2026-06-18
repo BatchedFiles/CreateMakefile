@@ -130,7 +130,7 @@ Function SaveSettings( _
 
 			End Select
 
-			RegSetValueEx( _
+			Dim resSet As LSTATUS = RegSetValueEx( _
 				hRegistryKey, _
 				pVector[i].Key, _
 				0, _
@@ -138,6 +138,12 @@ Function SaveSettings( _
 				pData, _
 				cbWriteBytes _
 			)
+
+			If resSet = ERROR_SUCCESS Then
+				pVector[i].Value.ErrorCode = 0
+			Else
+				pVector[i].Value.ErrorCode = resSet
+			End If
 		Next
 
 		RegCloseKey(hRegistryKey)
