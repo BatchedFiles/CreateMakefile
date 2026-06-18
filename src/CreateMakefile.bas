@@ -772,6 +772,9 @@ Private Function WriteSetenvWin32( _
 	Print #oStream, "rem GCC libraries"
 	Print #oStream, "set LIBS_GCC=-lgcc -lmingw32 -lmingwex -lmoldname -lgcc_eh"
 
+	Print #oStream, "rem Debug libraries"
+	Print #oStream, "set LIBS_DEBUG=-lgcc -lmingw32 -lmingwex -lmoldname -lgcc_eh"
+
 	Print #oStream, "rem Add any user libraries sach as -lcards"
 	Print #oStream, "set LIBS_ANY="
 
@@ -1189,7 +1192,7 @@ Private Sub WriteLinkerFlags( _
 			Print #MakefileStream, "endif"
 
 			Print #MakefileStream, "debug: LDFLAGS+=$(LDFLAGS_DEBUG)"
-			Print #MakefileStream, "debug: LDLIBS+=$(LDLIBS_DEBUG)"
+			Print #MakefileStream, "debug: LDLIBS+=$(LIBS_DEBUG)"
 	End Select
 
 	Print #MakefileStream,
@@ -1227,9 +1230,6 @@ Private Sub WriteLinkerLibraries( _
 
 			' Crtend libraries
 			Print #MakefileStream, "LDLIBSEND+=$(OBJ_CRT_END)"
-
-			' Debug libraries
-			Print #MakefileStream, "LDLIBS_DEBUG+=$(LIBS_GCC)"
 
 	End Select
 
@@ -1686,7 +1686,7 @@ Private Function ParseCommandLine( _
 	p->FileSubsystem = SUBSYSTEM_CONSOLE
 	p->Emitter = CODE_EMITTER_GCC
 	p->FixEmittedCode = NOT_FIX_EMITTED_CODE
-	p->Unicode = DEFINE_ANSI
+	p->UnicodeFlag = DEFINE_ANSI
 	p->UseFbRuntimeLibrary = DEFINE_FB_RUNTIME
 	p->UseCRuntimeLibrary = DEFINE_C_RUNTIME
 	p->AddressAware = LARGE_ADDRESS_UNAWARE
@@ -1791,7 +1791,7 @@ Private Function ParseCommandLine( _
 
 			Case "-unicode"
 				If sValue = "true" Then
-					p->Unicode = DEFINE_UNICODE
+					p->UnicodeFlag = DEFINE_UNICODE
 				End If
 
 			Case "-wrt"
@@ -1941,7 +1941,7 @@ Private Sub PrintAllParameters( _
 
 	Scope
 		Dim sUnicode As String
-		Select Case p->Unicode
+		Select Case p->UnicodeFlag
 			Case DEFINE_ANSI
 				sUnicode = "false"
 			Case DEFINE_UNICODE
@@ -2189,3 +2189,5 @@ Scope
 
 	Print "Done"
 End Scope
+
+' TODO Исправить регистр файлов ресурсов и расширения *.RC или *.rc
