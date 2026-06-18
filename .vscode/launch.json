@@ -1,0 +1,123 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "x64 debug CreateMakefile Windows GUI",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/Debug/x64/cmf-gui.exe",
+            "args": [],
+            "stopAtEntry": true,
+            "cwd": "${fileDirname}",
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "C:\\Program Files\\mingw64\\bin\\gdb.exe",
+            "setupCommands": [
+                {
+                    "description": "Включить автоматическое форматирование для gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "name": "x86 debug CreateMakefile Windows GUI",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/Debug/x86/cmf-gui.exe",
+            "args": [],
+            "stopAtEntry": true,
+            "cwd": "${fileDirname}",
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "C:\\Program Files (x86)\\mingw32\\bin\\gdb.exe",
+            "setupCommands": [
+                {
+                    "description": "Включить автоматическое форматирование для gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "name": "debug CreateMakefile Windows Console",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/Debug/x64/CreateMakefile.exe",
+            "args": [
+				/* "-makefile", "Makefile", */
+				"-src", "src",
+				"-fbc-path", "C:\\Program Files (x86)\\FreeBASIC-1.10.1-winlibs-gcc-9.3.0",
+				/* "-i", "include path", */
+				"-fbc", "fbc64.exe",
+				"-out", "windows",
+				/* Main module filename */
+				"-module", "WinMain",
+				"-exetype", "exe",
+				/* console, windows, native*/
+				"-subsystem", "windows",
+				"-emitter", "gcc",
+				"-fix", "true",
+				"-unicode", "true",
+				"-wrt", "true",
+				"-addressaware", "true",
+				"-multithreading", "false",
+				"-usefilesuffix", "true",
+				"-pedantic", "true",
+				"-create-environment-file", "true",
+				"-winver", "1280",
+            ],
+            "stopAtEntry": true,
+            "cwd": "${workspaceFolder}",
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "C:\\Program Files\\mingw64\\bin\\gdb.exe",
+            "setupCommands": [
+                {
+                    "description": "Включить автоматическое форматирование для gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "name": "debug CreateMakefile Linux",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/CreateMakefile.exe",
+            "args": [
+                "-makefile", "Makefile",
+                "-src", "src",
+                "-fbc-path", "/usr/bin",
+                "-i", "/usr/include/freebasic",
+                "-fbc", "fbc",
+                "-out", "windows",
+                "-module", "CreateMakefile",
+                "-exetype", "exe",
+                "-subsystem", "console",
+                "-emitter", "gcc",
+                "-fix", "false",
+                "-unicode", "false",
+                "-wrt", "true",
+                "-addressaware", "true",
+                "-multithreading", "true",
+                "-usefilesuffix", "true",
+                "-pedantic", "true",
+				"-create-environment-file", "true",
+                "-winver", "0",
+            ],
+            "stopAtEntry": true,
+            "cwd": "${workspaceFolder}",
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Включить автоматическое форматирование для gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        }
+    ]
+}
