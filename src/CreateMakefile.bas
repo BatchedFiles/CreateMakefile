@@ -113,7 +113,7 @@ Type Parameter
 	FileSubsystem As Subsystem
 	Emitter As CodeEmitter
 	FixEmittedCode As FixCode
-	Unicode As UseUnicode
+	UnicodeFlag As UseUnicode
 	UseFbRuntimeLibrary As UseFbRuntime
 	UseCRuntimeLibrary As UseCRuntime
 	AddressAware As ProcessAddressSpace
@@ -228,7 +228,7 @@ Private Function CreateCompilerParams( _
 
 	ParamVector(0) = CodeGenerationToString(p)
 
-	Select Case p->Unicode
+	Select Case p->UnicodeFlag
 
 		Case DEFINE_ANSI
 			ParamVector(1) = ""
@@ -681,7 +681,7 @@ Private Function WriteSetenvWin32( _
 	Print #oStream, "set _WIN32_WINNT=" & p->MinimalOSVersion
 
 	Print #oStream, "rem Use unicode in WinAPI"
-	If p->Unicode = DEFINE_UNICODE Then
+	If p->UnicodeFlag = DEFINE_UNICODE Then
 		Print #oStream, "set USE_UNICODE=TRUE"
 	Else
 		Print #oStream, "set USE_UNICODE=FALSE"
