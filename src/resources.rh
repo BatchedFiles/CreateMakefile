@@ -45,5 +45,10 @@
 #define IDC_SELECT_PROJECTPATH       10004
 #define IDC_TXT_SRCPATH              10005
 #define IDC_CMD_CREATE               10006
+#define IDC_TXT_EXENAME              10007
+#define IDC_TXT_MODULENAME           10008
+#define IDC_CBB_FILETYPE             10009
+#define IDC_CBB_SUBSYSTEM            10010
+#define IDC_CHK_UNICODE              10011
 
 #endif
