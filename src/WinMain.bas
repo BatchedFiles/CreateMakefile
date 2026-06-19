@@ -29,12 +29,15 @@ _itoa ((Value), (buf), 10)
 #ENDMACRO
 #endif
 
-Const SettingsLength = 5
+Const SettingsLength = 8
 Const CompilerPathString = __TEXT("CompilerPath")
 Const ProjectPathString = __TEXT("ProjectPath")
 Const SourcePathString = __TEXT("Src")
 Const OutNameString = __TEXT("Out")
 Const MainModuleString = __TEXT("Module")
+Const FileTypeString = __TEXT("FileType")
+Const SubSystemString = __TEXT("SubSystem")
+Const UnicodeString = __TEXT("Unicode")
 
 Const STRING_BUFFER_CAPACITY = 255
 
@@ -252,13 +255,37 @@ Private Sub MainDialog_OnUnload( _
 	)
 
 	For i As Integer = 0 To SettingsLength - 1
-		Dim Length As UINT = GetDlgItemText( _
-			hWin, _
-			self->pSettings[i].Value.ControlId, _
-			@self->pSettings[i].Value.Buffer, _
-			SettingsValueItemMaxLength _
-		)
-		self->pSettings[i].Value.Length = CInt(Length)
+
+		Select Case self->pSettings[i].Value.vType
+
+			Case SettingsValueType.ValueTypeString
+				Dim Length As UINT = GetDlgItemText( _
+					hWin, _
+					self->pSettings[i].Value.ControlId, _
+					@self->pSettings[i].Value.Buffer, _
+					SettingsValueItemMaxLength _
+				)
+				self->pSettings[i].Value.Length = CInt(Length)
+
+			Case SettingsValueType.ValueTypeInt32
+				If self->pSettings[i].Value.ControlId = IDC_CHK_UNICODE Then
+					self->pSettings[i].Value.Value32 = SendDlgItemMessage( _
+						hWin, _
+						self->pSettings[i].Value.ControlId, _
+						BM_GETCHECK, _
+						0, _
+						0 _
+					)
+				Else
+					self->pSettings[i].Value.Value32 = SendDlgItemMessage( _
+						hWin, _
+						self->pSettings[i].Value.ControlId, _
+						CB_GETCURSEL, _
+						0, _
+						0 _
+					)
+				End If
+		End Select
 	Next
 
 	SaveSettings( _
@@ -314,12 +341,37 @@ Private Sub MainDialog_OnLoad( _
 
 	If resSuccess Then
 		For i As Integer = 0 To SettingsLength - 1
+
 			If self->pSettings[i].Value.ErrorCode = 0 Then
-				SetDlgItemText( _
-					hWin, _
-					self->pSettings[i].Value.ControlId, _
-					@self->pSettings[i].Value.Buffer _
-				)
+
+				Select Case self->pSettings[i].Value.vType
+
+					Case SettingsValueType.ValueTypeString
+						SetDlgItemText( _
+							hWin, _
+							self->pSettings[i].Value.ControlId, _
+							@self->pSettings[i].Value.Buffer _
+						)
+
+					Case SettingsValueType.ValueTypeInt32
+						If self->pSettings[i].Value.ControlId = IDC_CHK_UNICODE Then
+							SendDlgItemMessage( _
+								hWin, _
+								self->pSettings[i].Value.ControlId, _
+								BM_SETCHECK, _
+								self->pSettings[i].Value.Value32, _
+								0 _
+							)
+						Else
+							SendDlgItemMessage( _
+								hWin, _
+								self->pSettings[i].Value.ControlId, _
+								CB_SETCURSEL, _
+								self->pSettings[i].Value.Value32, _
+								0 _
+							)
+						End If
+				End Select
 			End If
 		Next
 	End If
@@ -456,6 +508,18 @@ Private Function CreateSettings( _
 	pSettings[4].Key = @MainModuleString
 	pSettings[4].Value.ControlId = IDC_TXT_MODULENAME
 	pSettings[4].Value.vType = SettingsValueType.ValueTypeString
+
+	pSettings[5].Key = @FileTypeString
+	pSettings[5].Value.ControlId = IDC_CBB_FILETYPE
+	pSettings[5].Value.vType = SettingsValueType.ValueTypeInt32
+
+	pSettings[6].Key = @SubSystemString
+	pSettings[6].Value.ControlId = IDC_CBB_SUBSYSTEM
+	pSettings[6].Value.vType = SettingsValueType.ValueTypeInt32
+
+	pSettings[7].Key = @UnicodeString
+	pSettings[7].Value.ControlId = IDC_CHK_UNICODE
+	pSettings[7].Value.vType = SettingsValueType.ValueTypeInt32
 
 	Return pSettings
 
