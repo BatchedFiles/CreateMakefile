@@ -57,5 +57,7 @@
 #define IDC_CBB_FILETYPE             10009
 #define IDC_CBB_SUBSYSTEM            10010
 #define IDC_CHK_UNICODE              10011
+#define IDC_TXT_GENERATOR            10012
+#define IDC_SELECT_GENERATOR         10013
 
 #endif
