@@ -29,10 +29,12 @@ _itoa ((Value), (buf), 10)
 #ENDMACRO
 #endif
 
-Const SettingsLength = 3
+Const SettingsLength = 5
 Const CompilerPathString = __TEXT("CompilerPath")
 Const ProjectPathString = __TEXT("ProjectPath")
 Const SourcePathString = __TEXT("Src")
+Const OutNameString = __TEXT("Out")
+Const MainModuleString = __TEXT("Module")
 
 Const STRING_BUFFER_CAPACITY = 255
 
@@ -446,6 +448,14 @@ Private Function CreateSettings( _
 	pSettings[2].Key = @SourcePathString
 	pSettings[2].Value.ControlId = IDC_TXT_SRCPATH
 	pSettings[2].Value.vType = SettingsValueType.ValueTypeString
+
+	pSettings[3].Key = @OutNameString
+	pSettings[3].Value.ControlId = IDC_TXT_EXENAME
+	pSettings[3].Value.vType = SettingsValueType.ValueTypeString
+
+	pSettings[4].Key = @MainModuleString
+	pSettings[4].Value.ControlId = IDC_TXT_MODULENAME
+	pSettings[4].Value.vType = SettingsValueType.ValueTypeString
 
 	Return pSettings
 
