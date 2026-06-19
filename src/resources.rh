@@ -37,6 +37,13 @@
 #define IDS_FILTER                      16
 #define IDS_SELECTFILE                  17
 #define IDS_SELECTFOLDER                18
+#define IDS_FILETYPE_EXE                19
+#define IDS_FILETYPE_DLL                20
+#define IDS_FILETYPE_LIBRARY            21
+#define IDS_FILETYPE_WASM32             22
+#define IDS_SUBSYSTEM_CONSOLE           23
+#define IDS_SUBSYSTEM_WINDOW            24
+#define IDS_SUBSYSTEM_NATIVE            25
 
 #define IDD_DLG_MAIN                 10000
 #define IDC_TXT_COMPILER             10001
