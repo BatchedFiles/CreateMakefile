@@ -270,7 +270,9 @@ Private Function CreateCompilerParams( _
 
 	ParamVector(9) = "-m " & p->MainModuleName
 
-	ParamVector(10) = "-i " & p->SourceFolder
+	If Len(p->SourceFolder) Then
+		ParamVector(10) = "-i " & p->SourceFolder
+	End If
 
 	Dim CompilerParam As String = Join(ParamVector(), " ")
 
@@ -1340,15 +1342,29 @@ Private Sub WriteApplicationRules( _
 	Print #MakefileStream, "$(OBJ_DEBUG_DIR)$(PATH_SEP)%$(FILE_SUFFIX).asm: $(OBJ_DEBUG_DIR)$(PATH_SEP)%$(FILE_SUFFIX).c"
 	Print #MakefileStream, vbTab & "$(CC) $(EXTRA_CFLAGS) $(CFLAGS) -o $@ $<"
 	Print #MakefileStream,
-	Print #MakefileStream, "$(OBJ_RELEASE_DIR)$(PATH_SEP)%$(FILE_SUFFIX).obj: src$(PATH_SEP)%.RC"
+
+	If Len(p->SourceFolder) Then
+		Print #MakefileStream, "$(OBJ_RELEASE_DIR)$(PATH_SEP)%$(FILE_SUFFIX).obj: " & p->SourceFolder & "$(PATH_SEP)%.RC"
+	Else
+		Print #MakefileStream, "$(OBJ_RELEASE_DIR)$(PATH_SEP)%$(FILE_SUFFIX).obj: %.RC"
+	End If
 	Print #MakefileStream, vbTab & "$(GORC) $(GORCFLAGS) $(PARAM_SEP)fo $@ $<"
 	Print #MakefileStream,
 
-	Print #MakefileStream, "$(OBJ_DEBUG_DIR)$(PATH_SEP)%$(FILE_SUFFIX).obj: src$(PATH_SEP)%.RC"
+	If Len(p->SourceFolder) Then
+		Print #MakefileStream, "$(OBJ_DEBUG_DIR)$(PATH_SEP)%$(FILE_SUFFIX).obj: " & p->SourceFolder & "$(PATH_SEP)%.RC"
+	Else
+		Print #MakefileStream, "$(OBJ_DEBUG_DIR)$(PATH_SEP)%$(FILE_SUFFIX).obj: %.RC"
+	End If
 	Print #MakefileStream, vbTab & "$(GORC) $(GORCFLAGS) $(PARAM_SEP)fo $@ $<"
 	Print #MakefileStream,
 
-	Dim SourceFolderWithPathSep As String = AppendPathSeparator(p->SourceFolder)
+	Dim SourceFolderWithPathSep As String
+	If Len(p->SourceFolder) Then
+		SourceFolderWithPathSep = AppendPathSeparator(p->SourceFolder)
+	Else
+		SourceFolderWithPathSep = ""
+	End If
 
 	Dim AnyBasFile As String = ReplaceOSPathSeparatorToMakePathSeparator(SourceFolderWithPathSep) & "%.bas"
 
@@ -1676,7 +1692,7 @@ Private Function ParseCommandLine( _
 	) As ParseResult
 
 	p->MakefileFileName = "Makefile"
-	p->SourceFolder = "src"
+	p->SourceFolder = ""
 	p->CompilerPath = ""
 	p->IncludePath = ""
 	p->FbcCompilerName = ""
