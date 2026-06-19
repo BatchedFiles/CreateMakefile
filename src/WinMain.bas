@@ -233,6 +233,17 @@ Private Sub SelectCompilerPath_OnClick( _
 
 End Sub
 
+Private Sub CreateMakefile_OnClick( _
+		ByVal self As MainForm Ptr, _
+		ByVal hWin As HWND _
+	)
+
+	' Получить параметры
+	' Создать дочерний процесс
+	' Выдать результат
+
+End Sub
+
 Private Sub MainDialog_OnUnload( _
 		ByVal self As MainForm Ptr, _
 		ByVal hWin As HWND _
@@ -259,6 +270,40 @@ Private Sub MainDialog_OnLoad( _
 		ByVal self As MainForm Ptr, _
 		ByVal hWin As HWND _
 	)
+
+	For i As Integer = IDS_FILETYPE_EXE To IDS_FILETYPE_WASM32
+		Dim FileType As WZString * (STRING_BUFFER_CAPACITY + 1) = Any
+		LoadString( _
+			self->hInst, _
+			i, _
+			@FileType, _
+			STRING_BUFFER_CAPACITY _
+		)
+
+		SendDlgItemMessage( _
+			hWin, IDC_CBB_FILETYPE, CB_ADDSTRING, 0, Cast(LPARAM, @FileType) _
+		)
+		SendDlgItemMessage( _
+			hWin, IDC_CBB_FILETYPE, CB_SETCURSEL, 0, 0 _
+		)
+	Next
+
+	For i As Integer = IDS_SUBSYSTEM_CONSOLE To IDS_SUBSYSTEM_NATIVE
+		Dim SubSystem As WZString * (STRING_BUFFER_CAPACITY + 1) = Any
+		LoadString( _
+			self->hInst, _
+			i, _
+			@SubSystem, _
+			STRING_BUFFER_CAPACITY _
+		)
+
+		SendDlgItemMessage( _
+			hWin, IDC_CBB_SUBSYSTEM, CB_ADDSTRING, 0, Cast(LPARAM, @SubSystem) _
+		)
+		SendDlgItemMessage( _
+			hWin, IDC_CBB_SUBSYSTEM, CB_SETCURSEL, 0, 0 _
+		)
+	Next
 
 	Dim resSuccess As Boolean = LoadSettings( _
 		self->pSettings, _
@@ -321,8 +366,8 @@ Private Function MainDialogProc( _
 						Case IDC_SELECT_COMPILER
 							SelectCompilerPath_OnClick(self, hWin)
 
-						Case IDOK
-							EndDialog(hWin, IDOK)
+						Case IDC_CMD_CREATE
+							CreateMakefile_OnClick(self, hWin)
 
 						Case IDCANCEL
 							EndDialog(hWin, IDCANCEL)
