@@ -137,7 +137,11 @@ mingw32-make all
 Создадим `Makefile` для оконной программы:
 
 ```bat
-"c:\FreeBASIC Projects\CreateMakefile.exe" -out HelloWorld -subsystem windows -fbc-path "C:\Program Files (x86)\FreeBASIC-1.10.0-winlibs-gcc-9.3.0" -fbc fbc64.exe
+"c:\FreeBASIC Projects\CreateMakefile.exe" ^
+    -out HelloWorld ^
+	-subsystem windows ^
+	-fbc-path "C:\Program Files (x86)\FreeBASIC-1.10.0-winlibs-gcc-9.3.0" ^
+	-fbc fbc64.exe
 ```
 
 ### Консольная программа
