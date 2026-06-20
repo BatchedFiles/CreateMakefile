@@ -29,8 +29,9 @@ _itoa ((Value), (buf), 10)
 #ENDMACRO
 #endif
 
-Const SettingsLength = 8
+Const SettingsLength = 9
 Const CompilerPathString = __TEXT("CompilerPath")
+Const GeneratorPathString = __TEXT("GeneratorPath")
 Const ProjectPathString = __TEXT("ProjectPath")
 Const SourcePathString = __TEXT("Src")
 Const OutNameString = __TEXT("Out")
@@ -170,6 +171,34 @@ Private Sub SelectProjectPath_OnClick( _
 		hWin, _
 		IDC_TXT_PROJECTPATH, _
 		@folderPath _
+	)
+
+End Sub
+
+Private Sub SelectGeneratorPath_OnClick( _
+		ByVal self As MainForm Ptr, _
+		ByVal hWin As HWND _
+	)
+
+	Dim buf As WZString * (STRING_BUFFER_CAPACITY + 1) = Any
+	Dim nFileOffset As Integer = Any
+	Dim nFileExtension As Integer = Any
+	Dim resOpen As Boolean = OpenFileShowDialog( _
+		self->hInst, _
+		hWin, _
+		@buf, _
+		@nFileOffset, _
+		@nFileExtension _
+	)
+
+	If resOpen = False Then
+		Exit Sub
+	End If
+
+	SetDlgItemText( _
+		hWin, _
+		IDC_TXT_GENERATOR, _
+		@buf _
 	)
 
 End Sub
@@ -420,6 +449,9 @@ Private Function MainDialogProc( _
 						Case IDC_SELECT_COMPILER
 							SelectCompilerPath_OnClick(self, hWin)
 
+						Case IDC_SELECT_GENERATOR
+							SelectGeneratorPath_OnClick(self, hWin)
+
 						Case IDC_CMD_CREATE
 							CreateMakefile_OnClick(self, hWin)
 
@@ -520,6 +552,10 @@ Private Function CreateSettings( _
 	pSettings[7].Key = @UnicodeString
 	pSettings[7].Value.ControlId = IDC_CHK_UNICODE
 	pSettings[7].Value.vType = SettingsValueType.ValueTypeInt32
+
+	pSettings[8].Key = @GeneratorPathString
+	pSettings[8].Value.ControlId = IDC_TXT_GENERATOR
+	pSettings[8].Value.vType = SettingsValueType.ValueTypeString
 
 	Return pSettings
 
