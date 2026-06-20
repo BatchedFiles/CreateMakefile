@@ -104,10 +104,16 @@ cd c:\FreeBASIC Projects\My Cool Project
 setenv.cmd
 ```
 
-Создаём каталоги `bin` и `obj` если они ещё не созданы:
+Создаём каталоги `bin` и `obj` если они ещё не созданы. Первый способ: с помощью утилиты `make`:
 
 ```bat
 mingw32-make createdirs
+```
+
+Второй способ: через генератор:
+
+```bat
+CreateMakefile.exe -createdirs true
 ```
 
 Запускаем одну или несколько целей сборки:
