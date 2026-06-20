@@ -702,7 +702,12 @@ Private Function WriteSetenvWin32( _
 	End If
 
 	Dim Extension As String = GetExtensionOutputFile(p)
-	Print #oStream, "set OUTPUT_FILE_NAME=" & p->OutputFileName & "%FILE_SUFFIX%" & Extension
+
+	If p->ExeType = OUTPUT_FILETYPE_LIBRARY Then
+		Print #oStream, "set OUTPUT_FILE_NAME=lib" & p->OutputFileName & "%FILE_SUFFIX%" & Extension
+	Else
+		Print #oStream, "set OUTPUT_FILE_NAME=" & p->OutputFileName & "%FILE_SUFFIX%" & Extension
+	End If
 	Print #oStream,
 
 	Print #oStream, "rem Add any flags to compiler"
@@ -869,7 +874,11 @@ Private Sub WriteOutputFilename( _
 	Print #MakefileStream, "RUNTIME = _WRT"
 	Print #MakefileStream, "endif"
 
-	Print #MakefileStream, "OUTPUT_FILE_NAME ?= " & p->OutputFileName & "$(FILE_SUFFIX)" & Extension
+	If p->ExeType = OUTPUT_FILETYPE_LIBRARY Then
+		Print #MakefileStream, "OUTPUT_FILE_NAME ?= lib" & p->OutputFileName & "$(FILE_SUFFIX)" & Extension
+	Else
+		Print #MakefileStream, "OUTPUT_FILE_NAME ?= " & p->OutputFileName & "$(FILE_SUFFIX)" & Extension
+	End If
 	Print #MakefileStream,
 
 End Sub
@@ -1008,7 +1017,8 @@ Private Sub WriteGccFlags( _
 
 	End Select
 
-	Print #MakefileStream, "CFLAGS+=-pipe"
+	' TODO Добавить опцию ассемблера
+	Print #MakefileStream, "CFLAGS+=-pipe -masm=intel"
 
 	If p->Pedantic Then
 		Print #MakefileStream, "CFLAGS+=-Wall -Werror -Wextra -pedantic"
@@ -1026,7 +1036,17 @@ Private Sub WriteGccFlags( _
 	Print #MakefileStream, "release: CFLAGS+=$(CFLAGS_RELEASE)"
 	Print #MakefileStream, "release: CFLAGS+=-fno-math-errno -fno-exceptions"
 	Print #MakefileStream, "release: CFLAGS+=-fno-unwind-tables -fno-asynchronous-unwind-tables"
-	Print #MakefileStream, "release: CFLAGS+=-O3 -fno-ident -fdata-sections -ffunction-sections"
+
+	' TODO Уточнить уровень оптимизации для библиотек
+	If p->ExeType = OUTPUT_FILETYPE_LIBRARY Then
+		Print #MakefileStream, "release: CFLAGS+=-O0"
+	Else
+		Print #MakefileStream, "release: CFLAGS+=-O3 -fno-ident"
+	End If
+
+	If p->ExeType = OUTPUT_FILETYPE_EXE Then
+		Print #MakefileStream, "release: CFLAGS+=-fdata-sections -ffunction-sections"
+	End If
 
 	Print #MakefileStream, "ifneq ($(FLTO),)"
 	Print #MakefileStream, "release: CFLAGS+=-flto"
@@ -1321,16 +1341,37 @@ Private Sub WriteApplicationRules( _
 		ByVal p As Parameter Ptr _
 	)
 
-	Print #MakefileStream, "$(BIN_RELEASE_DIR)$(PATH_SEP)$(OUTPUT_FILE_NAME): $(OBJECTFILES_RELEASE)"
-	Print #MakefileStream, vbTab & "$(LD) $(LDFLAGS) $(LDLIBSBEGIN) $^ $(LDLIBS) $(LDLIBSEND) -o $@"
-	Print #MakefileStream,
-	Print #MakefileStream, "$(BIN_DEBUG_DIR)$(PATH_SEP)$(OUTPUT_FILE_NAME): $(OBJECTFILES_DEBUG)"
-	Print #MakefileStream, vbTab & "$(LD) $(LDFLAGS) $(LDLIBSBEGIN) $^ $(LDLIBS) $(LDLIBSEND) -o $@"
-	Print #MakefileStream,
+	Select Case p->ExeType
+		Case OUTPUT_FILETYPE_DLL
+			' TODO Create DLL
+
+		Case OUTPUT_FILETYPE_LIBRARY
+			Print #MakefileStream, "$(BIN_RELEASE_DIR)$(PATH_SEP)$(OUTPUT_FILE_NAME): $(OBJECTFILES_RELEASE)"
+			Print #MakefileStream, vbTab & "$(AR) -rsc $@ $^"
+			Print #MakefileStream,
+			Print #MakefileStream, "$(BIN_DEBUG_DIR)$(PATH_SEP)$(OUTPUT_FILE_NAME): $(OBJECTFILES_DEBUG)"
+			Print #MakefileStream, vbTab & "$(AR) -rsc $@ $^"
+			Print #MakefileStream,
+
+		Case OUTPUT_FILETYPE_WASM32
+			' TODO Create wasm
+
+		Case OUTPUT_FILETYPE_WASM64
+			' TODO Create wasm
+
+		Case OUTPUT_FILETYPE_EXE
+			Print #MakefileStream, "$(BIN_RELEASE_DIR)$(PATH_SEP)$(OUTPUT_FILE_NAME): $(OBJECTFILES_RELEASE)"
+			Print #MakefileStream, vbTab & "$(LD) $(LDFLAGS) $(LDLIBSBEGIN) $^ $(LDLIBS) $(LDLIBSEND) -o $@"
+			Print #MakefileStream,
+			Print #MakefileStream, "$(BIN_DEBUG_DIR)$(PATH_SEP)$(OUTPUT_FILE_NAME): $(OBJECTFILES_DEBUG)"
+			Print #MakefileStream, vbTab & "$(LD) $(LDFLAGS) $(LDLIBSBEGIN) $^ $(LDLIBS) $(LDLIBSEND) -o $@"
+			Print #MakefileStream,
+
+	End Select
+
 	Print #MakefileStream, "$(OBJ_RELEASE_DIR)$(PATH_SEP)%$(FILE_SUFFIX).o: $(OBJ_RELEASE_DIR)$(PATH_SEP)%$(FILE_SUFFIX).asm"
 	Print #MakefileStream, vbTab & "$(AS) $(ASFLAGS) -o $@ $<"
 	Print #MakefileStream,
-
 	Print #MakefileStream, "$(OBJ_DEBUG_DIR)$(PATH_SEP)%$(FILE_SUFFIX).o: $(OBJ_DEBUG_DIR)$(PATH_SEP)%$(FILE_SUFFIX).asm"
 	Print #MakefileStream, vbTab & "$(AS) $(ASFLAGS) -o $@ $<"
 	Print #MakefileStream,
@@ -1338,7 +1379,6 @@ Private Sub WriteApplicationRules( _
 	Print #MakefileStream, "$(OBJ_RELEASE_DIR)$(PATH_SEP)%$(FILE_SUFFIX).asm: $(OBJ_RELEASE_DIR)$(PATH_SEP)%$(FILE_SUFFIX).c"
 	Print #MakefileStream, vbTab & "$(CC) $(EXTRA_CFLAGS) $(CFLAGS) -o $@ $<"
 	Print #MakefileStream,
-
 	Print #MakefileStream, "$(OBJ_DEBUG_DIR)$(PATH_SEP)%$(FILE_SUFFIX).asm: $(OBJ_DEBUG_DIR)$(PATH_SEP)%$(FILE_SUFFIX).c"
 	Print #MakefileStream, vbTab & "$(CC) $(EXTRA_CFLAGS) $(CFLAGS) -o $@ $<"
 	Print #MakefileStream,
@@ -1376,9 +1416,7 @@ Private Sub WriteApplicationRules( _
 		Print #MakefileStream, vbTab & "$(CPREPROCESSOR_COMMAND) -release " & AnyCFile
 		Print #MakefileStream, vbTab & "$(MOVE_COMMAND) " & AnyCFile & " $(OBJ_RELEASE_DIR_MOVE)$(MOVE_PATH_SEP)$*$(FILE_SUFFIX).c"
 		Print #MakefileStream,
-	End Scope
 
-	Scope
 		Print #MakefileStream, "$(OBJ_DEBUG_DIR)$(PATH_SEP)%$(FILE_SUFFIX).c: " & AnyBasFile
 		Print #MakefileStream, vbTab & "$(FBC) $(FBCFLAGS) $<"
 		Print #MakefileStream, vbTab & "$(CPREPROCESSOR_COMMAND) -debug " & AnyCFile
