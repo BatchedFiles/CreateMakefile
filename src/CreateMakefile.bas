@@ -320,22 +320,6 @@ Private Function ReplaceOSPathSeparatorToMakePathSeparator( _
 
 End Function
 
-Private Function ReplaceOSPathSeparatorToMovePathSeparator( _
-		ByVal strLine As String _
-	) As String
-
-	' Replace "\" to "$(MOVE_PATH_SEP)"
-
-	Dim strLine1 As String = Replace( _
-		strLine, _
-		PATH_SEPARATOR, _
-		MakefileMovePathSeparator _
-	)
-
-	Return strLine1
-
-End Function
-
 Private Sub RemoveVerticalLine( _
 		LinesVector() As String _
 	)
@@ -1406,21 +1390,17 @@ Private Sub WriteApplicationRules( _
 		SourceFolderWithPathSep = ""
 	End If
 
-	Dim AnyBasFile As String = ReplaceOSPathSeparatorToMakePathSeparator(SourceFolderWithPathSep) & "%.bas"
-
-	Dim AnyCFile As String = ReplaceOSPathSeparatorToMovePathSeparator(SourceFolderWithPathSep) & "$*.c"
-
 	Scope
+		Dim AnyBasFile As String = ReplaceOSPathSeparatorToMakePathSeparator(SourceFolderWithPathSep) & "%.bas"
+
 		Print #MakefileStream, "$(OBJ_RELEASE_DIR)$(PATH_SEP)%$(FILE_SUFFIX).c: " & AnyBasFile
-		Print #MakefileStream, vbTab & "$(FBC) $(FBCFLAGS) $<"
-		Print #MakefileStream, vbTab & "$(CPREPROCESSOR_COMMAND) -release " & AnyCFile
-		Print #MakefileStream, vbTab & "$(MOVE_COMMAND) " & AnyCFile & " $(OBJ_RELEASE_DIR_MOVE)$(MOVE_PATH_SEP)$*$(FILE_SUFFIX).c"
+		Print #MakefileStream, vbTab & "$(FBC) $(FBCFLAGS) $< -o $(OBJ_RELEASE_DIR)$(PATH_SEP)$*$(FILE_SUFFIX).c"
+		Print #MakefileStream, vbTab & "$(CPREPROCESSOR_COMMAND) -release $(OBJ_RELEASE_DIR)$(PATH_SEP)$*$(FILE_SUFFIX).c"
 		Print #MakefileStream,
 
 		Print #MakefileStream, "$(OBJ_DEBUG_DIR)$(PATH_SEP)%$(FILE_SUFFIX).c: " & AnyBasFile
-		Print #MakefileStream, vbTab & "$(FBC) $(FBCFLAGS) $<"
-		Print #MakefileStream, vbTab & "$(CPREPROCESSOR_COMMAND) -debug " & AnyCFile
-		Print #MakefileStream, vbTab & "$(MOVE_COMMAND) " & AnyCFile & " $(OBJ_DEBUG_DIR_MOVE)$(MOVE_PATH_SEP)$*$(FILE_SUFFIX).c"
+		Print #MakefileStream, vbTab & "$(FBC) $(FBCFLAGS) $< -o $(OBJ_DEBUG_DIR)$(PATH_SEP)$*$(FILE_SUFFIX).c"
+		Print #MakefileStream, vbTab & "$(CPREPROCESSOR_COMMAND) -debug $(OBJ_DEBUG_DIR)$(PATH_SEP)$*$(FILE_SUFFIX).c"
 		Print #MakefileStream,
 	End Scope
 
