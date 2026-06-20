@@ -1,0 +1,4 @@
+#ifndef GENERATEDIALOG_BI
+#define GENERATEDIALOG_BI
+
+#endif
