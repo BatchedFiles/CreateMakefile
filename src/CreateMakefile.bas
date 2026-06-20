@@ -1857,6 +1857,29 @@ Private Function ParseCommandLine( _
 
 	Next
 
+	If p->CreateDirs Then
+		Print "Create bin obj directories..."
+		MkDir("bin")
+		MkDir("bin" & PATH_SEPARATOR & "Debug")
+		MkDir("bin" & PATH_SEPARATOR & "Debug" & PATH_SEPARATOR  & "x64")
+		MkDir("bin" & PATH_SEPARATOR & "Debug" & PATH_SEPARATOR  & "x86")
+
+		MkDir("bin" & PATH_SEPARATOR & "Release")
+		MkDir("bin" & PATH_SEPARATOR & "Release" & PATH_SEPARATOR  & "x64")
+		MkDir("bin" & PATH_SEPARATOR & "Release" & PATH_SEPARATOR  & "x86")
+
+		MkDir("obj")
+		MkDir("obj" & PATH_SEPARATOR & "Debug")
+		MkDir("obj" & PATH_SEPARATOR & "Debug" & PATH_SEPARATOR  & "x64")
+		MkDir("obj" & PATH_SEPARATOR & "Debug" & PATH_SEPARATOR  & "x86")
+
+		MkDir("obj" & PATH_SEPARATOR & "Release")
+		MkDir("obj" & PATH_SEPARATOR & "Release" & PATH_SEPARATOR  & "x64")
+		MkDir("obj" & PATH_SEPARATOR & "Release" & PATH_SEPARATOR  & "x86")
+
+		Print "Done"
+	End If
+
 	If Len(p->CompilerPath) = 0 Then
 		Print "Path to compiler is not specified"
 		Return PARSE_FAIL
@@ -2088,29 +2111,6 @@ Scope
 		End(1)
 	End If
 End Scope
-
-If pParams->CreateDirs Then
-	Print "Create bin obj directories..."
-	MkDir("bin")
-	MkDir("bin" & PATH_SEPARATOR & "Debug")
-	MkDir("bin" & PATH_SEPARATOR & "Debug" & PATH_SEPARATOR  & "x64")
-	MkDir("bin" & PATH_SEPARATOR & "Debug" & PATH_SEPARATOR  & "x86")
-
-	MkDir("bin" & PATH_SEPARATOR & "Release")
-	MkDir("bin" & PATH_SEPARATOR & "Release" & PATH_SEPARATOR  & "x64")
-	MkDir("bin" & PATH_SEPARATOR & "Release" & PATH_SEPARATOR  & "x86")
-
-	MkDir("obj")
-	MkDir("obj" & PATH_SEPARATOR & "Debug")
-	MkDir("obj" & PATH_SEPARATOR & "Debug" & PATH_SEPARATOR  & "x64")
-	MkDir("obj" & PATH_SEPARATOR & "Debug" & PATH_SEPARATOR  & "x86")
-
-	MkDir("obj" & PATH_SEPARATOR & "Release")
-	MkDir("obj" & PATH_SEPARATOR & "Release" & PATH_SEPARATOR  & "x64")
-	MkDir("obj" & PATH_SEPARATOR & "Release" & PATH_SEPARATOR  & "x86")
-
-	Print "Done"
-End If
 
 LibsWinAPI = 0
 
