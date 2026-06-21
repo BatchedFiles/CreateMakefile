@@ -596,7 +596,6 @@ Private Function WriteSetenvWin32( _
 	Print #oStream, "set PARAM_SEP=/"
 	Print #oStream, "set PATH_SEP=/"
 	Print #oStream, "set MOVE_PATH_SEP=\\"
-	Print #oStream, "set MOVE_COMMAND=%ComSpec% $(PARAM_SEP)c move $(PARAM_SEP)y"
 	Print #oStream, "set DELETE_COMMAND=%ComSpec% $(PARAM_SEP)c del $(PARAM_SEP)f $(PARAM_SEP)q"
 	Print #oStream, "set MKDIR_COMMAND=%ComSpec% $(PARAM_SEP)c mkdir"
 
@@ -837,7 +836,6 @@ Private Sub WriteUtilsPathWin32( _
 	Print #MakefileStream, "PATH_SEP ?= /"
 	Print #MakefileStream, "MOVE_PATH_SEP ?= \\"
 	Print #MakefileStream,
-	Print #MakefileStream, "MOVE_COMMAND ?= $(ComSpec) $(PARAM_SEP)c move $(PARAM_SEP)y"
 	Print #MakefileStream, "DELETE_COMMAND ?= $(ComSpec) $(PARAM_SEP)c del $(PARAM_SEP)f $(PARAM_SEP)q"
 	Print #MakefileStream, "MKDIR_COMMAND ?= $(ComSpec) $(PARAM_SEP)c mkdir"
 	Print #MakefileStream, "CPREPROCESSOR_COMMAND ?= $(ComSpec) $(PARAM_SEP)c echo no need to fix code"
