@@ -25,45 +25,15 @@ Enum CodeEmitter
 	CODE_EMITTER_WASM64
 End Enum
 
-Enum FixCode
-	NOT_FIX_EMITTED_CODE
-	FIX_EMITTED_CODE
-End Enum
-
-Enum UseUnicode
-	DEFINE_ANSI
-	DEFINE_UNICODE
-End Enum
-
-Enum UseFbRuntime
-	DEFINE_FB_RUNTIME
-	DEFINE_WITHOUT_FB_RUNTIME
-End Enum
-
-Enum UseCRuntime
-	DEFINE_C_RUNTIME
-	DEFINE_WITHOUT_C_RUNTIME
-End Enum
-
 Enum ProcessAddressSpace
 	LARGE_ADDRESS_UNAWARE
 	LARGE_ADDRESS_AWARE
 End Enum
 
-Enum MultiThreading
-	DEFINE_SINGLETHREADING_RUNTIME
-	DEFINE_MULTITHREADING_RUNTIME
-End Enum
-
-Enum UseSettingsEnvironment
-	SETTINGS_ENVIRONMENT_ALWAYS
-	DO_NOT_USE_SETTINGS_ENVIRONMENT
-End Enum
-
 Enum ParseResult
-	PARSE_FAIL
-	PARSE_SUCCESS
-	PARSE_HELP
+	PARSE_FAIL = -1
+	PARSE_SUCCESS = 0
+	PARSE_HELP = 1
 End Enum
 
 Const WINVER_XP = 1281
@@ -112,14 +82,14 @@ Type Parameter
 	ExeType As ExecutableType
 	FileSubsystem As Subsystem
 	Emitter As CodeEmitter
-	FixEmittedCode As FixCode
-	UnicodeFlag As UseUnicode
-	UseFbRuntimeLibrary As UseFbRuntime
-	UseCRuntimeLibrary As UseCRuntime
 	AddressAware As ProcessAddressSpace
-	ThreadingMode As MultiThreading
-	UseEnvironmentFile As UseSettingsEnvironment
 	MinimalOSVersion As Integer
+	UseEnvironmentFile As Boolean
+	MultiThreading As Boolean
+	UseFbRuntimeLibrary As Boolean
+	UseCRuntimeLibrary As Boolean
+	FixEmittedCode As Boolean
+	UnicodeFlag As Boolean
 	UseFileSuffix As Boolean
 	Pedantic As Boolean
 	CreateDirs As Boolean
@@ -228,25 +198,17 @@ Private Function CreateCompilerParams( _
 
 	ParamVector(0) = CodeGenerationToString(p)
 
-	Select Case p->UnicodeFlag
+	If p->UnicodeFlag Then
+		ParamVector(1) = "-d UNICODE -d _UNICODE"
+	Else
+		ParamVector(1) = ""
+	End If
 
-		Case DEFINE_ANSI
-			ParamVector(1) = ""
-
-		Case DEFINE_UNICODE
-			ParamVector(1) = "-d UNICODE"
-
-	End Select
-
-	Select Case p->UseFbRuntimeLibrary
-
-		Case DEFINE_FB_RUNTIME
-			ParamVector(2) = ""
-
-		Case DEFINE_WITHOUT_FB_RUNTIME
-			ParamVector(2) = "-d WITHOUT_RUNTIME"
-
-	End Select
+	If p->UseFbRuntimeLibrary Then
+		ParamVector(2) = ""
+	Else
+		ParamVector(2) = "-d WITHOUT_RUNTIME"
+	End If
 
 	If p->MinimalOSVersion Then
 		ParamVector(3) = "-d WINVER=" & p->MinimalOSVersion & " -d _WIN32_WINNT=" & p->MinimalOSVersion
@@ -638,7 +600,7 @@ Private Function WriteSetenvWin32( _
 	Print #oStream, "set DELETE_COMMAND=%ComSpec% $(PARAM_SEP)c del $(PARAM_SEP)f $(PARAM_SEP)q"
 	Print #oStream, "set MKDIR_COMMAND=%ComSpec% $(PARAM_SEP)c mkdir"
 
-	If p->FixEmittedCode = FIX_EMITTED_CODE Then
+	If p->FixEmittedCode Then
 		Print #oStream, "set CPREPROCESSOR_COMMAND=cscript.exe fix-emitted-code.vbs"
 	Else
 		Print #oStream, "set CPREPROCESSOR_COMMAND=%ComSpec% $(PARAM_SEP)c echo cscript.exe fix-emitted-code.vbs"
@@ -650,10 +612,10 @@ Private Function WriteSetenvWin32( _
 	Print #oStream,
 
 	Print #oStream, "rem Set TRUE to use runtime libraries"
-	If p->UseFbRuntimeLibrary = DEFINE_WITHOUT_FB_RUNTIME Then
-		Print #oStream, "set USE_RUNTIME=FALSE"
-	Else
+	If p->UseFbRuntimeLibrary Then
 		Print #oStream, "set USE_RUNTIME=TRUE"
+	Else
+		Print #oStream, "set USE_RUNTIME=FALSE"
 	End If
 
 	Print #oStream, "rem Set FALSE to disable c-runtime libraries"
@@ -667,7 +629,7 @@ Private Function WriteSetenvWin32( _
 	Print #oStream, "set _WIN32_WINNT=" & p->MinimalOSVersion
 
 	Print #oStream, "rem Use unicode in WinAPI"
-	If p->UnicodeFlag = DEFINE_UNICODE Then
+	If p->UnicodeFlag Then
 		Print #oStream, "set USE_UNICODE=TRUE"
 	Else
 		Print #oStream, "set USE_UNICODE=FALSE"
@@ -771,14 +733,14 @@ Private Function WriteSetenvWin32( _
 
 	Print #oStream, "rem All libraries"
 
-	If p->UseFbRuntimeLibrary = DEFINE_WITHOUT_FB_RUNTIME Then
-		If p->UseCRuntimeLibrary = DEFINE_WITHOUT_C_RUNTIME Then
-			Print #oStream, "set LIBS_OS=%LIBS_WIN95% %LIBS_WINNT% %LIBS_ANY%"
-		Else
-			Print #oStream, "set LIBS_OS=%LIBS_WIN95% %LIBS_WINNT% %LIBS_GCC% %LIBS_ANY%"
-		End If
-	Else
+	If p->UseFbRuntimeLibrary Then
 		Print #oStream, "set LIBS_OS=%LIBS_WIN95% %LIBS_WINNT% %LIBS_FB% %LIBS_GCC% %LIBS_ANY%"
+	Else
+		If p->UseCRuntimeLibrary Then
+			Print #oStream, "set LIBS_OS=%LIBS_WIN95% %LIBS_WINNT% %LIBS_GCC% %LIBS_ANY%"
+		Else
+			Print #oStream, "set LIBS_OS=%LIBS_WIN95% %LIBS_WINNT% %LIBS_ANY%"
+		End If
 	End If
 	Print #oStream,
 
@@ -1719,13 +1681,13 @@ Private Function ParseCommandLine( _
 	p->ExeType = OUTPUT_FILETYPE_EXE
 	p->FileSubsystem = SUBSYSTEM_CONSOLE
 	p->Emitter = CODE_EMITTER_GCC
-	p->FixEmittedCode = NOT_FIX_EMITTED_CODE
-	p->UnicodeFlag = DEFINE_ANSI
-	p->UseFbRuntimeLibrary = DEFINE_FB_RUNTIME
-	p->UseCRuntimeLibrary = DEFINE_C_RUNTIME
+	p->FixEmittedCode = False
+	p->UnicodeFlag = False
+	p->UseFbRuntimeLibrary = True
+	p->UseCRuntimeLibrary = True
 	p->AddressAware = LARGE_ADDRESS_UNAWARE
-	p->ThreadingMode = DEFINE_SINGLETHREADING_RUNTIME
-	p->UseEnvironmentFile = SETTINGS_ENVIRONMENT_ALWAYS
+	p->MultiThreading = False
+	p->UseEnvironmentFile = True
 	p->MinimalOSVersion = WINVER_DEFAULT
 	p->UseFileSuffix = False
 	p->Pedantic = False
@@ -1820,22 +1782,22 @@ Private Function ParseCommandLine( _
 
 			Case "-fix"
 				If sValue = "true" Then
-					p->FixEmittedCode = FIX_EMITTED_CODE
+					p->FixEmittedCode = True
 				End If
 
 			Case "-unicode"
 				If sValue = "true" Then
-					p->UnicodeFlag = DEFINE_UNICODE
+					p->UnicodeFlag = True
 				End If
 
 			Case "-wrt"
 				If sValue = "true" Then
-					p->UseFbRuntimeLibrary = DEFINE_WITHOUT_FB_RUNTIME
+					p->UseFbRuntimeLibrary = False
 				End If
 
 			Case "-wcrt"
 				If sValue = "true" Then
-					p->UseCRuntimeLibrary = DEFINE_WITHOUT_C_RUNTIME
+					p->UseCRuntimeLibrary = False
 				End If
 
 			Case "-addressaware"
@@ -1845,7 +1807,7 @@ Private Function ParseCommandLine( _
 
 			Case "-multithreading"
 				If sValue = "true" Then
-					p->ThreadingMode = DEFINE_MULTITHREADING_RUNTIME
+					p->MultiThreading = True
 				End If
 
 			Case "-usefilesuffix"
@@ -1860,7 +1822,7 @@ Private Function ParseCommandLine( _
 
 			Case "-create-environment-file"
 				If sValue = "false" Then
-					p->UseEnvironmentFile = DO_NOT_USE_SETTINGS_ENVIRONMENT
+					p->UseEnvironmentFile = False
 				End If
 
 			Case "-winver"
@@ -1987,34 +1949,31 @@ Private Sub PrintAllParameters( _
 
 	Scope
 		Dim sFix As String
-		Select Case p->FixEmittedCode
-			Case NOT_FIX_EMITTED_CODE
-				sFix = "false"
-			Case FIX_EMITTED_CODE
-				sFix = "true"
-		End Select
+		If p->FixEmittedCode Then
+			sFix = "true"
+		Else
+			sFix = "false"
+		End If
 		Print "Fix emitted code", sFix
 	End Scope
 
 	Scope
 		Dim sUnicode As String
-		Select Case p->UnicodeFlag
-			Case DEFINE_ANSI
-				sUnicode = "false"
-			Case DEFINE_UNICODE
-				sUnicode = "true"
-		End Select
+		If p->UnicodeFlag Then
+			sUnicode = "true"
+		Else
+			sUnicode = "false"
+		End If
 		Print "Unicode", sUnicode
 	End Scope
 
 	Scope
 		Dim sRuntime As String
-		Select Case p->UseFbRuntimeLibrary
-			Case DEFINE_FB_RUNTIME
-				sRuntime = "true"
-			Case DEFINE_WITHOUT_FB_RUNTIME
-				sRuntime = "false"
-		End Select
+		If p->UseFbRuntimeLibrary Then
+			sRuntime = "true"
+		Else
+			sRuntime = "false"
+		End If
 		Print "Use runtime libraries", sRuntime
 	End Scope
 
@@ -2031,23 +1990,21 @@ Private Sub PrintAllParameters( _
 
 	Scope
 		Dim sMode As String
-		Select Case p->ThreadingMode
-			Case DEFINE_SINGLETHREADING_RUNTIME
-				sMode = "single threading"
-			Case DEFINE_MULTITHREADING_RUNTIME
-				sMode = "multithreading"
-		End Select
+		If p->MultiThreading Then
+			sMode = "multithreading"
+		Else
+			sMode = "single threading"
+		End If
 		Print "Threading mode", sMode
 	End Scope
 
 	Scope
 		Dim sEnviron As String
-		Select Case p->UseEnvironmentFile
-			Case SETTINGS_ENVIRONMENT_ALWAYS
-				sEnviron = "true"
-			Case DO_NOT_USE_SETTINGS_ENVIRONMENT
-				sEnviron = "false"
-		End Select
+		If p->UseEnvironmentFile Then
+			sEnviron = "true"
+		Else
+			sEnviron = "false"
+		End If
 		Print "Create environment file", sEnviron
 	End Scope
 
@@ -2173,7 +2130,7 @@ Scope
 	Print "Done"
 End Scope
 
-If pParams->UseEnvironmentFile = SETTINGS_ENVIRONMENT_ALWAYS Then
+If pParams->UseEnvironmentFile Then
 	Print "Write environment file..."
 
 	var resSetenv = WriteSetenv(pParams)

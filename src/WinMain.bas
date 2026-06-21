@@ -4,6 +4,7 @@
 #include once "win\ole2.bi"
 #include once "win\shlobj.bi"
 #include once "crt.bi"
+#include once "GenerateDialog.bi"
 #include once "resources.rh"
 #include once "Registry.bi"
 
@@ -272,9 +273,85 @@ Private Sub CreateMakefile_OnClick( _
 		ByVal hWin As HWND _
 	)
 
-	' Получить параметры
+	Dim GeneratorProcessName As WZString * (MAX_PATH + 1) = Any
+	GetDlgItemText( _
+		hWin, _
+		IDC_TXT_GENERATOR, _
+		@GeneratorProcessName, _
+		MAX_PATH _
+	)
+
+	Dim CompilerProcessName As WZString * (MAX_PATH + 1) = Any
+	GetDlgItemText( _
+		hWin, _
+		IDC_TXT_COMPILER, _
+		@CompilerProcessName, _
+		MAX_PATH _
+	)
+
+	Dim ProjectPath As WZString * (MAX_PATH + 1) = Any
+	GetDlgItemText( _
+		hWin, _
+		IDC_TXT_PROJECTPATH, _
+		@ProjectPath, _
+		MAX_PATH _
+	)
+
+	Dim SourcePath As WZString * (MAX_PATH + 1) = Any
+	GetDlgItemText( _
+		hWin, _
+		IDC_TXT_SRCPATH, _
+		@SourcePath, _
+		MAX_PATH _
+	)
+
+	Dim OutputFilename As WZString * (MAX_PATH + 1) = Any
+	GetDlgItemText( _
+		hWin, _
+		IDC_TXT_EXENAME, _
+		@OutputFilename, _
+		MAX_PATH _
+	)
+
+	Dim MainModuleName As WZString * (MAX_PATH + 1) = Any
+	GetDlgItemText( _
+		hWin, _
+		IDC_TXT_MODULENAME, _
+		@MainModuleName, _
+		MAX_PATH _
+	)
+
+	' "args": [
+	' 	/* "-makefile", "Makefile", */
+	' 	"-src", "src",
+	' 	"-fbc-path", "C:\\Program Files (x86)\\FreeBASIC-1.10.1-winlibs-gcc-9.3.0",
+	' 	/* include path */
+	' 	"-i", "C:\\Program Files (x86)\\FreeBASIC-1.10.1-winlibs-gcc-9.3.0\\inc",
+	' 	"-fbc", "fbc64.exe",
+	' 	"-out", "cmf-gui",
+	' 	/* Main module filename */
+	' 	"-module", "WinMain",
+	' 	"-exetype", "exe",
+	' 	/* console, windows, native */
+	' 	"-subsystem", "windows",
+	' 	"-emitter", "gcc",
+	' 	"-fix", "true",
+	' 	"-unicode", "true",
+	' 	"-wrt", "true",
+	' 	"-addressaware", "true",
+	' 	"-multithreading", "false",
+	' 	"-usefilesuffix", "true",
+	' 	"-pedantic", "true",
+	' 	"-create-environment-file", "true",
+	' 	"-winver", "1280",
+	' ],
+
 	' Создать дочерний процесс
-	' Выдать результат
+
+	' Выдать результат — показать диалог прогресса
+	' чтобы нельзя было переместиться в основное окно и запустить когда не готово
+	' Диалог создаёт процесс и запускает его
+	' Диалог только данные для процесса получает
 
 End Sub
 
@@ -347,16 +424,16 @@ Private Sub MainDialog_OnLoad( _
 	Next
 
 	For i As Integer = IDS_SUBSYSTEM_CONSOLE To IDS_SUBSYSTEM_NATIVE
-		Dim SubSystem As WZString * (STRING_BUFFER_CAPACITY + 1) = Any
+		Dim szSubSystem As WZString * (STRING_BUFFER_CAPACITY + 1) = Any
 		LoadString( _
 			self->hInst, _
 			i, _
-			@SubSystem, _
+			@szSubSystem, _
 			STRING_BUFFER_CAPACITY _
 		)
 
 		SendDlgItemMessage( _
-			hWin, IDC_CBB_SUBSYSTEM, CB_ADDSTRING, 0, Cast(LPARAM, @SubSystem) _
+			hWin, IDC_CBB_SUBSYSTEM, CB_ADDSTRING, 0, Cast(LPARAM, @szSubSystem) _
 		)
 		SendDlgItemMessage( _
 			hWin, IDC_CBB_SUBSYSTEM, CB_SETCURSEL, 0, 0 _
