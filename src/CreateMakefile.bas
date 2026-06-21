@@ -95,13 +95,18 @@ Type Parameter
 	CreateDirs As Boolean
 End Type
 
-Dim Shared ObjCrtStart(0 To ...) As LibraryItem = { _
-	Type("crt2.o", True), _
-	Type("crtbegin.o", True), _
-	Type("fbrt0.o", True) _
+Dim Shared ObjCrtStartExe(0 To ...) As LibraryItem = { _
+	Type("""%LIB_DIR%\crt2.o""", True), _
+	Type("""%LIB_DIR%\crtbegin.o""", True), _
+	Type("""%LIB_DIR%\fbrt0.o""", True) _
+}
+Dim Shared ObjCrtStartDll(0 To ...) As LibraryItem = { _
+	Type("""%LIB_DIR%\dllcrt2.o""", True), _
+	Type("""%LIB_DIR%\crtbegin.o""", True), _
+	Type("""%LIB_DIR%\fbrt0.o""", True) _
 }
 Dim Shared ObjCrtEnd(0 To ...) As LibraryItem = { _
-	Type("crtend.o", True) _
+	Type("""%LIB_DIR%\crtend.o""", True) _
 }
 Dim Shared LibsWin95(0 To ...) As LibraryItem = { _
 	Type("-ladvapi32", False), _
@@ -682,7 +687,32 @@ Private Function WriteSetenvWin32( _
 
 	Print #oStream, "rem Libraries list"
 
-	Print #oStream, "set OBJ_CRT_START=""%LIB_DIR%\crt2.o"" ""%LIB_DIR%\crtbegin.o"" ""%LIB_DIR%\fbrt0.o"""
+	Dim StartLibraryes As String
+
+	Select Case p->ExeType
+
+		Case OUTPUT_FILETYPE_EXE
+			For i As Integer = LBound(ObjCrtStartExe) To UBound(ObjCrtStartExe) - 1
+				If ObjCrtStartExe(i).Used Then
+					StartLibraryes = StartLibraryes & ObjCrtStartExe(i).LibName & " "
+				End If
+			Next
+			StartLibraryes = StartLibraryes & ObjCrtStartExe(UBound(ObjCrtStartExe)).LibName
+
+		Case OUTPUT_FILETYPE_DLL
+			For i As Integer = LBound(ObjCrtStartDll) To UBound(ObjCrtStartDll) - 1
+				If ObjCrtStartDll(i).Used Then
+					StartLibraryes = StartLibraryes & ObjCrtStartDll(i).LibName & " "
+				End If
+			Next
+			StartLibraryes = StartLibraryes & ObjCrtStartDll(UBound(ObjCrtStartDll)).LibName
+
+		Case Else
+			StartLibraryes = ""
+
+	End Select
+
+	Print #oStream, "set OBJ_CRT_START=" & StartLibraryes
 	Print #oStream, "set OBJ_CRT_END=""%LIB_DIR%\crtend.o"""
 
 	Scope
