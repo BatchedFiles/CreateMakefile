@@ -604,11 +604,7 @@ Private Function WriteSetenvWin32( _
 	Print #oStream, "set DELETE_COMMAND=%ComSpec% $(PARAM_SEP)c del $(PARAM_SEP)f $(PARAM_SEP)q"
 	Print #oStream, "set MKDIR_COMMAND=%ComSpec% $(PARAM_SEP)c mkdir"
 
-	If p->FixEmittedCode Then
-		Print #oStream, "set CPREPROCESSOR_COMMAND=cscript.exe fix-emitted-code.vbs"
-	Else
-		Print #oStream, "set CPREPROCESSOR_COMMAND=%ComSpec% $(PARAM_SEP)c echo cscript.exe fix-emitted-code.vbs"
-	End If
+	Print #oStream, "set CPREPROCESSOR_COMMAND=cscript.exe fix-emitted-code.vbs"
 	Print #oStream,
 
 	Print #oStream, "rem Source code directory"
@@ -1460,12 +1456,20 @@ Private Sub WriteApplicationRules( _
 
 		Print #MakefileStream, "$(OBJ_RELEASE_DIR)$(PATH_SEP)%$(FILE_SUFFIX).c: " & AnyBasFile
 		Print #MakefileStream, vbTab & "$(FBC) $(FBCFLAGS) $< -o $(OBJ_RELEASE_DIR)$(PATH_SEP)$*$(FILE_SUFFIX).c"
-		Print #MakefileStream, vbTab & "$(CPREPROCESSOR_COMMAND) -release $(OBJ_RELEASE_DIR)$(PATH_SEP)$*$(FILE_SUFFIX).c"
+
+		If p->FixEmittedCode Then
+			Print #MakefileStream, vbTab & "$(CPREPROCESSOR_COMMAND) -release $(OBJ_RELEASE_DIR)$(PATH_SEP)$*$(FILE_SUFFIX).c"
+		End If
+
 		Print #MakefileStream,
 
 		Print #MakefileStream, "$(OBJ_DEBUG_DIR)$(PATH_SEP)%$(FILE_SUFFIX).c: " & AnyBasFile
 		Print #MakefileStream, vbTab & "$(FBC) $(FBCFLAGS) $< -o $(OBJ_DEBUG_DIR)$(PATH_SEP)$*$(FILE_SUFFIX).c"
-		Print #MakefileStream, vbTab & "$(CPREPROCESSOR_COMMAND) -debug $(OBJ_DEBUG_DIR)$(PATH_SEP)$*$(FILE_SUFFIX).c"
+
+		If p->FixEmittedCode Then
+			Print #MakefileStream, vbTab & "$(CPREPROCESSOR_COMMAND) -debug $(OBJ_DEBUG_DIR)$(PATH_SEP)$*$(FILE_SUFFIX).c"
+		End If
+
 		Print #MakefileStream,
 	End Scope
 
