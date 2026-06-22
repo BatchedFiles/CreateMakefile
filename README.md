@@ -30,7 +30,7 @@ fbc *.bas
 
 ### Утилита make
 
-Необходимо где‐то достать утилиту `make`. Например, для Windows в одной из (сборок mingw от Brecht Sanders)[https://github.com/brechtsanders/winlibs_mingw/releases]. В этой сборке для операционной системы Windows утилита называется `mingw32-make`.
+Необходимо где‐то достать утилиту `make`. Например, для Windows в одной из [сборок mingw от Brecht Sanders](https://github.com/brechtsanders/winlibs_mingw/releases). В этой сборке для операционной системы Windows утилита называется `mingw32-make`.
 
 ### Сборка генератора
 
