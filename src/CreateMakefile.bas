@@ -1338,7 +1338,8 @@ Private Sub WriteObjectFiles( _
 End Sub
 
 Private Sub WriteApplicationTargets( _
-		ByVal MakefileStream As Long _
+		ByVal MakefileStream As Long, _
+		ByVal p As Parameter Ptr _
 	)
 
 	Print #MakefileStream, "release: $(BIN_RELEASE_DIR)$(PATH_SEP)$(OUTPUT_FILE_NAME)"
@@ -2292,7 +2293,7 @@ Scope
 
 	WriteDependencies(DepsVector(), MakefileNumber, pParams)
 
-	WriteApplicationTargets(MakefileNumber)
+	WriteApplicationTargets(MakefileNumber, pParams)
 
 	' bas -> c -> asm -> o + obj -> exe
 	' rc -> obj -> exe
