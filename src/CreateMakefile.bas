@@ -653,11 +653,20 @@ Private Function WriteSetenvWin32( _
 
 	Dim Extension As String = GetExtensionOutputFile(p)
 
-	If p->ExeType = OUTPUT_FILETYPE_LIBRARY Then
-		Print #oStream, "set OUTPUT_FILE_NAME=lib" & p->OutputFileName & "%FILE_SUFFIX%" & Extension
-	Else
-		Print #oStream, "set OUTPUT_FILE_NAME=" & p->OutputFileName & "%FILE_SUFFIX%" & Extension
-	End If
+	Select Case p->ExeType
+
+		Case OUTPUT_FILETYPE_LIBRARY
+			Print #oStream, "set OUTPUT_FILE_NAME=lib" & p->OutputFileName & "%FILE_SUFFIX%" & Extension
+
+		Case OUTPUT_FILETYPE_DLL
+			Print #oStream, "set OUTPUT_FILE_NAME=" & p->OutputFileName & "%FILE_SUFFIX%" & Extension
+			Print #oStream, "set OUTPUT_FILE_DEF=" & p->OutputFileName & "%FILE_SUFFIX%" & ".def"
+			Print #oStream, "set OUTPUT_FILE_LIB=lib" & p->OutputFileName & "%FILE_SUFFIX%" & ".dll.a"
+
+		Case Else ' OUTPUT_FILETYPE_EXE
+			Print #oStream, "set OUTPUT_FILE_NAME=" & p->OutputFileName & "%FILE_SUFFIX%" & Extension
+
+	End Select
 	Print #oStream,
 
 	Print #oStream, "rem Add any flags to compiler"
@@ -727,6 +736,12 @@ Private Function WriteSetenvWin32( _
 
 	Scope
 		Dim Libs As String
+		For i As Integer = LBound(LibsWinNT) To UBound(LibsWinNT)
+			If LibsWinNT(i).Used Then
+				Libs &= LibsWinNT(i).LibName & " "
+			End If
+		Next
+
 		Dim pNode As LibraryNode Ptr = LibsWinAPI
 
 		Do While pNode
@@ -849,11 +864,21 @@ Private Sub WriteOutputFilename( _
 	Print #MakefileStream, "RUNTIME = _WRT"
 	Print #MakefileStream, "endif"
 
-	If p->ExeType = OUTPUT_FILETYPE_LIBRARY Then
-		Print #MakefileStream, "OUTPUT_FILE_NAME ?= lib" & p->OutputFileName & "$(FILE_SUFFIX)" & Extension
-	Else
-		Print #MakefileStream, "OUTPUT_FILE_NAME ?= " & p->OutputFileName & "$(FILE_SUFFIX)" & Extension
-	End If
+	Select Case p->ExeType
+
+		Case OUTPUT_FILETYPE_LIBRARY
+			Print #MakefileStream, "OUTPUT_FILE_NAME ?= lib" & p->OutputFileName & "$(FILE_SUFFIX)" & Extension
+
+		Case OUTPUT_FILETYPE_DLL
+			Print #MakefileStream, "OUTPUT_FILE_NAME ?= " & p->OutputFileName & "$(FILE_SUFFIX)" & Extension
+			Print #MakefileStream, "OUTPUT_FILE_DEF ?= " & p->OutputFileName & "$(FILE_SUFFIX)" & ".def"
+			Print #MakefileStream, "OUTPUT_FILE_LIB ?= lib" & p->OutputFileName & "$(FILE_SUFFIX)" & ".dll.a"
+
+		Case Else ' OUTPUT_FILETYPE_EXE
+			Print #MakefileStream, "OUTPUT_FILE_NAME ?= " & p->OutputFileName & "$(FILE_SUFFIX)" & Extension
+
+	End Select
+
 	Print #MakefileStream,
 
 End Sub
@@ -1107,24 +1132,26 @@ Private Sub WriteLinkerFlags( _
 			Print #MakefileStream, "endif"
 
 		Case Else
-			Print #MakefileStream, "ifeq ($(PROCESSOR_ARCHITECTURE),AMD64)"
+			Scope
+				Print #MakefileStream, "ifeq ($(PROCESSOR_ARCHITECTURE),AMD64)"
 
-			Print #MakefileStream, "else"
+				Print #MakefileStream, "else"
 
-			Select Case p->AddressAware
+				Select Case p->AddressAware
 
-				Case LARGE_ADDRESS_UNAWARE
+					Case LARGE_ADDRESS_UNAWARE
 
-				Case LARGE_ADDRESS_AWARE
-					Print #MakefileStream, "ifeq ($(USE_LD_LINKER),TRUE)"
-					Print #MakefileStream, "LDFLAGS+=--large-address-aware"
-					Print #MakefileStream, "else"
-					Print #MakefileStream, "LDFLAGS+=-Wl,--large-address-aware"
-					Print #MakefileStream, "endif"
+					Case LARGE_ADDRESS_AWARE
+						Print #MakefileStream, "ifeq ($(USE_LD_LINKER),TRUE)"
+						Print #MakefileStream, "LDFLAGS+=--large-address-aware"
+						Print #MakefileStream, "else"
+						Print #MakefileStream, "LDFLAGS+=-Wl,--large-address-aware"
+						Print #MakefileStream, "endif"
 
-			End Select
+				End Select
 
-			Print #MakefileStream, "endif"
+				Print #MakefileStream, "endif"
+			End Scope
 
 			Select Case p->FileSubsystem
 
@@ -1147,6 +1174,19 @@ Private Sub WriteLinkerFlags( _
 					Print #MakefileStream, "LDFLAGS+=--subsystem native"
 					Print #MakefileStream, "else"
 					Print #MakefileStream, "LDFLAGS+=-Wl,--subsystem,native"
+					Print #MakefileStream, "endif"
+
+			End Select
+
+			Select Case p->ExeType
+
+				Case OUTPUT_FILETYPE_DLL
+					Print #MakefileStream, "ifeq ($(USE_LD_LINKER),TRUE)"
+					Print #MakefileStream, "LDFLAGS+=--dll --enable-stdcall-fixup"
+					Print #MakefileStream, "OUTPUT_DEF=--output-def"
+					Print #MakefileStream, "else"
+					Print #MakefileStream, "LDFLAGS+=-Wl,--dll -Wl,--enable-stdcall-fixup"
+					Print #MakefileStream, "OUTPUT_DEF=-Wl,--output-def"
 					Print #MakefileStream, "endif"
 
 			End Select
@@ -1178,18 +1218,27 @@ Private Sub WriteLinkerFlags( _
 			Print #MakefileStream, "LDFLAGS+=-T ""$(LD_SCRIPT)"""
 			Print #MakefileStream, "endif"
 
+	End Select
+
+	Print #MakefileStream, "release: LDFLAGS+=-s"
+
+	Select Case p->ExeType
+
+		Case OUTPUT_FILETYPE_EXE, OUTPUT_FILETYPE_DLL
 			Print #MakefileStream, "ifeq ($(USE_LD_LINKER),TRUE)"
-			Print #MakefileStream, "release: LDFLAGS+=-s --gc-sections"
+			Print #MakefileStream, "release: LDFLAGS+=--gc-sections"
 			Print #MakefileStream, "else"
-			Print #MakefileStream, "release: LDFLAGS+=-s -Wl,--gc-sections"
+			Print #MakefileStream, "release: LDFLAGS+=-Wl,--gc-sections"
 			Print #MakefileStream, "endif"
+
 			Print #MakefileStream, "ifneq ($(FLTO),)"
 			Print #MakefileStream, "release: LDFLAGS+=-flto"
 			Print #MakefileStream, "endif"
 
-			Print #MakefileStream, "debug: LDFLAGS+=$(LDFLAGS_DEBUG)"
-			Print #MakefileStream, "debug: LDLIBS+=$(LIBS_DEBUG)"
 	End Select
+
+	Print #MakefileStream, "debug: LDFLAGS+=$(LDFLAGS_DEBUG)"
+	Print #MakefileStream, "debug: LDLIBS+=$(LIBS_DEBUG)"
 
 	Print #MakefileStream,
 
@@ -1287,8 +1336,10 @@ Private Sub WriteApplicationTargets( _
 
 	Print #MakefileStream, "release: $(BIN_RELEASE_DIR)$(PATH_SEP)$(OUTPUT_FILE_NAME)"
 	Print #MakefileStream,
+
 	Print #MakefileStream, "debug: $(BIN_DEBUG_DIR)$(PATH_SEP)$(OUTPUT_FILE_NAME)"
 	Print #MakefileStream,
+
 	Print #MakefileStream, "clean:"
 	Print #MakefileStream, vbTab & "$(DELETE_COMMAND) $(OBJ_RELEASE_DIR_MOVE)$(MOVE_PATH_SEP)*$(FILE_SUFFIX).c"
 	Print #MakefileStream, vbTab & "$(DELETE_COMMAND) $(OBJ_DEBUG_DIR_MOVE)$(MOVE_PATH_SEP)*$(FILE_SUFFIX).c"
@@ -1300,7 +1351,12 @@ Private Sub WriteApplicationTargets( _
 	Print #MakefileStream, vbTab & "$(DELETE_COMMAND) $(OBJ_DEBUG_DIR_MOVE)$(MOVE_PATH_SEP)*$(FILE_SUFFIX).obj"
 	Print #MakefileStream, vbTab & "$(DELETE_COMMAND) $(BIN_RELEASE_DIR_MOVE)$(MOVE_PATH_SEP)$(OUTPUT_FILE_NAME)"
 	Print #MakefileStream, vbTab & "$(DELETE_COMMAND) $(BIN_DEBUG_DIR_MOVE)$(MOVE_PATH_SEP)$(OUTPUT_FILE_NAME)"
+	Print #MakefileStream, vbTab & "$(DELETE_COMMAND) $(OBJ_RELEASE_DIR_MOVE)$(MOVE_PATH_SEP)$(OUTPUT_FILE_DEF)"
+	Print #MakefileStream, vbTab & "$(DELETE_COMMAND) $(OBJ_DEBUG_DIR_MOVE)$(MOVE_PATH_SEP)$(OUTPUT_FILE_DEF)"
+	Print #MakefileStream, vbTab & "$(DELETE_COMMAND) $(BIN_RELEASE_DIR_MOVE)$(MOVE_PATH_SEP)$(OUTPUT_FILE_LIB)"
+	Print #MakefileStream, vbTab & "$(DELETE_COMMAND) $(BIN_DEBUG_DIR_MOVE)$(MOVE_PATH_SEP)$(OUTPUT_FILE_LIB)"
 	Print #MakefileStream,
+
 	Print #MakefileStream, "createdirs:"
 	Print #MakefileStream, vbTab & "$(MKDIR_COMMAND) $(BIN_DEBUG_DIR_MOVE)"
 	Print #MakefileStream, vbTab & "$(MKDIR_COMMAND) $(BIN_RELEASE_DIR_MOVE)"
@@ -1318,6 +1374,14 @@ Private Sub WriteApplicationRules( _
 	Select Case p->ExeType
 		Case OUTPUT_FILETYPE_DLL
 			' TODO Create DLL
+			Print #MakefileStream, "$(BIN_RELEASE_DIR)$(PATH_SEP)$(OUTPUT_FILE_NAME): $(OBJECTFILES_RELEASE)"
+			Print #MakefileStream, vbTab & "$(LD) $(LDFLAGS) $(OUTPUT_DEF) $(OBJ_RELEASE_DIR)$(PATH_SEP)$(OUTPUT_FILE_DEF) $(LDLIBSBEGIN) $^ $(LDLIBS) $(LDLIBSEND) -o $@"
+			Print #MakefileStream, vbTab & "$(DLL_TOOL) --def $(OBJ_RELEASE_DIR)$(PATH_SEP)$(OUTPUT_FILE_DEF) --dllname $(OUTPUT_FILE_NAME) --output-lib $(BIN_RELEASE_DIR)$(PATH_SEP)$(OUTPUT_FILE_LIB)"
+			Print #MakefileStream,
+			Print #MakefileStream, "$(BIN_DEBUG_DIR)$(PATH_SEP)$(OUTPUT_FILE_NAME): $(OBJECTFILES_DEBUG)"
+			Print #MakefileStream, vbTab & "$(LD) $(LDFLAGS) $(OUTPUT_DEF) $(OBJ_DEBUG_DIR)$(PATH_SEP)$(OUTPUT_FILE_DEF) $(LDLIBSBEGIN) $^ $(LDLIBS) $(LDLIBSEND) -o $@"
+			Print #MakefileStream, vbTab & "$(DLL_TOOL) --def $(OBJ_DEBUG_DIR)$(PATH_SEP)$(OUTPUT_FILE_DEF) --dllname $(OUTPUT_FILE_NAME) --output-lib $(BIN_DEBUG_DIR)$(PATH_SEP)$(OUTPUT_FILE_LIB)"
+			Print #MakefileStream,
 
 		Case OUTPUT_FILETYPE_LIBRARY
 			Print #MakefileStream, "$(BIN_RELEASE_DIR)$(PATH_SEP)$(OUTPUT_FILE_NAME): $(OBJECTFILES_RELEASE)"
@@ -1461,6 +1525,13 @@ Private Function AddLibrary( _
 	For i As Integer = LBound(LibsWin95) To UBound(LibsWin95)
 		If LibsWin95(i).LibName = LibName Then
 			LibsWin95(i).Used = True
+			Return True
+		End If
+	Next
+
+	For i As Integer = LBound(LibsWinNT) To UBound(LibsWinNT)
+		If LibsWinNT(i).LibName = LibName Then
+			LibsWinNT(i).Used = True
 			Return True
 		End If
 	Next
@@ -2114,6 +2185,12 @@ Scope
 		End(1)
 	End If
 End Scope
+
+If pParams->ExeType = OUTPUT_FILETYPE_DLL Then
+	LibsWin95(6).Used = True
+	LibsWin95(11).Used = True
+	LibsWinNT(4).Used = True
+End If
 
 LibsWinAPI = 0
 
