@@ -1026,12 +1026,12 @@ Private Sub WriteGccFlags( _
 	' TODO Добавить опцию ассемблера
 	Print #MakefileStream, "CFLAGS+=-pipe -masm=intel"
 
+	Print #MakefileStream, "CFLAGS+=-Wall -Wextra -Wshadow -Wpointer-arith -Wcast-qual"
 	If p->Pedantic Then
-		Print #MakefileStream, "CFLAGS+=-Wall -Werror -Wextra -pedantic"
+		Print #MakefileStream, "CFLAGS+=-pedantic"
 	End If
 
 	Print #MakefileStream, "CFLAGS+=-Wno-unused-label -Wno-unused-function"
-	Print #MakefileStream, "CFLAGS+=-Wno-unused-parameter -Wno-unused-variable"
 	Print #MakefileStream, "CFLAGS+=-Wno-dollar-in-identifier-extension"
 	Print #MakefileStream, "CFLAGS+=-Wno-language-extension-token"
 	Print #MakefileStream, "CFLAGS+=-Wno-parentheses-equality"
