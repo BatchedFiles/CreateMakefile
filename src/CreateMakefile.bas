@@ -951,7 +951,18 @@ Private Sub WriteFbcFlags( _
 	Print #MakefileStream, "FBCFLAGS+=-d _WIN32_WINNT=$(_WIN32_WINNT)"
 	Print #MakefileStream, "endif"
 
-	Print #MakefileStream, "FBCFLAGS+=-m " & p->MainModuleName
+	Select Case p->ExeType
+
+		Case OUTPUT_FILETYPE_EXE
+			Print #MakefileStream, "FBCFLAGS+=-m " & p->MainModuleName
+
+		Case OUTPUT_FILETYPE_LIBRARY
+			Print #MakefileStream, "FBCFLAGS+=-lib"
+
+		Case OUTPUT_FILETYPE_DLL
+			Print #MakefileStream, "FBCFLAGS+=-dll"
+
+	End Select
 
 	Print #MakefileStream, "ifeq ($(USE_RUNTIME),TRUE)"
 	Print #MakefileStream, "else"
