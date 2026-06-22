@@ -1372,8 +1372,8 @@ Private Sub WriteApplicationRules( _
 	)
 
 	Select Case p->ExeType
+
 		Case OUTPUT_FILETYPE_DLL
-			' TODO Create DLL
 			Print #MakefileStream, "$(BIN_RELEASE_DIR)$(PATH_SEP)$(OUTPUT_FILE_NAME): $(OBJECTFILES_RELEASE)"
 			Print #MakefileStream, vbTab & "$(LD) $(LDFLAGS) $(OUTPUT_DEF) $(OBJ_RELEASE_DIR)$(PATH_SEP)$(OUTPUT_FILE_DEF) $(LDLIBSBEGIN) $^ $(LDLIBS) $(LDLIBSEND) -o $@"
 			Print #MakefileStream, vbTab & "$(DLL_TOOL) --def $(OBJ_RELEASE_DIR)$(PATH_SEP)$(OUTPUT_FILE_DEF) --dllname $(OUTPUT_FILE_NAME) --output-lib $(BIN_RELEASE_DIR)$(PATH_SEP)$(OUTPUT_FILE_LIB)"
