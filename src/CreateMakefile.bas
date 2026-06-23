@@ -105,7 +105,10 @@ Dim Shared ObjCrtStartDll(0 To ...) As LibraryItem = { _
 	Type("""%LIB_DIR%\crtbegin.o""", True), _
 	Type("""%LIB_DIR%\fbrt0.o""", True) _
 }
-Dim Shared ObjCrtEnd(0 To ...) As LibraryItem = { _
+Dim Shared ObjCrtEndExe(0 To ...) As LibraryItem = { _
+	Type("""%LIB_DIR%\crtend.o""", True) _
+}
+Dim Shared ObjCrtEndDll(0 To ...) As LibraryItem = { _
 	Type("""%LIB_DIR%\crtend.o""", True) _
 }
 Dim Shared LibsWin95(0 To ...) As LibraryItem = { _
@@ -692,11 +695,12 @@ Private Function WriteSetenvWin32( _
 
 	Print #oStream, "rem Libraries list"
 
-	Dim StartLibraryes As String
-
 	Select Case p->ExeType
 
 		Case OUTPUT_FILETYPE_EXE
+			Dim StartLibraryes As String
+			Dim EndLibraryes As String
+
 			For i As Integer = LBound(ObjCrtStartExe) To UBound(ObjCrtStartExe) - 1
 				If ObjCrtStartExe(i).Used Then
 					StartLibraryes = StartLibraryes & ObjCrtStartExe(i).LibName & " "
@@ -704,7 +708,20 @@ Private Function WriteSetenvWin32( _
 			Next
 			StartLibraryes = StartLibraryes & ObjCrtStartExe(UBound(ObjCrtStartExe)).LibName
 
+			For i As Integer = LBound(ObjCrtEndExe) To UBound(ObjCrtEndExe) - 1
+				If ObjCrtEndExe(i).Used Then
+					EndLibraryes = EndLibraryes & ObjCrtEndExe(i).LibName & " "
+				End If
+			Next
+			EndLibraryes = EndLibraryes & ObjCrtEndExe(UBound(ObjCrtEndExe)).LibName
+
+			Print #oStream, "set OBJ_CRT_START=" & StartLibraryes
+			Print #oStream, "set OBJ_CRT_END=" & EndLibraryes
+
 		Case OUTPUT_FILETYPE_DLL
+			Dim StartLibraryes As String
+			Dim EndLibraryes As String
+
 			For i As Integer = LBound(ObjCrtStartDll) To UBound(ObjCrtStartDll) - 1
 				If ObjCrtStartDll(i).Used Then
 					StartLibraryes = StartLibraryes & ObjCrtStartDll(i).LibName & " "
@@ -712,13 +729,17 @@ Private Function WriteSetenvWin32( _
 			Next
 			StartLibraryes = StartLibraryes & ObjCrtStartDll(UBound(ObjCrtStartDll)).LibName
 
-		Case Else
-			StartLibraryes = ""
+			For i As Integer = LBound(ObjCrtEndDll) To UBound(ObjCrtEndDll) - 1
+				If ObjCrtEndDll(i).Used Then
+					EndLibraryes = EndLibraryes & ObjCrtEndDll(i).LibName & " "
+				End If
+			Next
+			EndLibraryes = EndLibraryes & ObjCrtEndDll(UBound(ObjCrtEndDll)).LibName
+
+			Print #oStream, "set OBJ_CRT_START=" & StartLibraryes
+			Print #oStream, "set OBJ_CRT_END=" & EndLibraryes
 
 	End Select
-
-	Print #oStream, "set OBJ_CRT_START=" & StartLibraryes
-	Print #oStream, "set OBJ_CRT_END=""%LIB_DIR%\crtend.o"""
 
 	Scope
 		Dim Libs As String
