@@ -30,6 +30,11 @@ Enum ProcessAddressSpace
 	LARGE_ADDRESS_AWARE
 End Enum
 
+Enum AssemblerFormat
+	ASSEMBLER_INTEL
+	ASSEMBLER_ATT
+End Enum
+
 Enum ParseResult
 	PARSE_FAIL = -1
 	PARSE_SUCCESS = 0
@@ -84,6 +89,7 @@ Type Parameter
 	Emitter As CodeEmitter
 	AddressAware As ProcessAddressSpace
 	MinimalOSVersion As Integer
+	AsmFormat As AssemblerFormat
 	UseEnvironmentFile As Boolean
 	MultiThreading As Boolean
 	UseFbRuntimeLibrary As Boolean
@@ -1044,8 +1050,21 @@ Private Sub WriteGccFlags( _
 
 	End Select
 
-	' TODO Добавить опцию ассемблера
-	Print #MakefileStream, "CFLAGS+=-pipe -masm=intel"
+	Scope
+		Dim sAsm As String
+
+		Select Case p->AsmFormat
+
+			Case ASSEMBLER_INTEL
+				sAsm = "intel"
+
+			Case Else ' ASSEMBLER_ATT
+				sAsm = "att"
+
+		End Select
+
+		Print #MakefileStream, "CFLAGS+=-pipe -masm=" & sAsm
+	End Scope
 
 	Print #MakefileStream, "CFLAGS+=-Wall -Wextra -Wshadow -Wpointer-arith -Wcast-qual"
 	If p->Pedantic Then
@@ -1820,14 +1839,15 @@ Private Function ParseCommandLine( _
 	p->ExeType = OUTPUT_FILETYPE_EXE
 	p->FileSubsystem = SUBSYSTEM_CONSOLE
 	p->Emitter = CODE_EMITTER_GCC
-	p->FixEmittedCode = False
-	p->UnicodeFlag = False
+	p->AddressAware = LARGE_ADDRESS_UNAWARE
+	p->MinimalOSVersion = WINVER_DEFAULT
+	p->AsmFormat = ASSEMBLER_INTEL
+	p->UseEnvironmentFile = True
+	p->MultiThreading = False
 	p->UseFbRuntimeLibrary = True
 	p->UseCRuntimeLibrary = True
-	p->AddressAware = LARGE_ADDRESS_UNAWARE
-	p->MultiThreading = False
-	p->UseEnvironmentFile = True
-	p->MinimalOSVersion = WINVER_DEFAULT
+	p->FixEmittedCode = False
+	p->UnicodeFlag = False
 	p->UseFileSuffix = False
 	p->Pedantic = False
 	p->CreateDirs = False
@@ -1972,6 +1992,14 @@ Private Function ParseCommandLine( _
 					p->CreateDirs = True
 				End If
 
+			Case "-asm"
+				Select Case sValue
+					Case "att"
+						p->AsmFormat = ASSEMBLER_ATT
+					Case "intel"
+						p->AsmFormat = ASSEMBLER_INTEL
+				End Select
+
 		End Select
 
 	Next
@@ -2084,6 +2112,17 @@ Private Sub PrintAllParameters( _
 				sEmitter = "wasm64"
 		End Select
 		Print "Code emitter", sEmitter
+	End Scope
+
+	Scope
+		Dim sAsm As String
+		Select Case p->AsmFormat
+			Case ASSEMBLER_INTEL
+				sAsm = "intel"
+			Case Else ' ASSEMBLER_ATT
+				sAsm = "att"
+		End Select
+		Print "assembler format", sAsm
 	End Scope
 
 	Scope

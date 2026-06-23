@@ -192,7 +192,8 @@ mingw32-make all
 	-pedantic false ^
 	-winver 1281 ^
 	-create-environment-file true ^
-	-createdirs false
+	-createdirs false ^
+	-asm intel
 ```
 
 ## Параметры генератора Makefile
@@ -374,6 +375,12 @@ mingw32-make all
 Создаёт подкаталоги `bin` и `obj`.
 
 По умолчанию `false`.
+
+### asm
+
+Формат ассемблера: `att` или `intel`.
+
+По умолчанию `intel`.
 
 ## Параметры для утилиты make
 
