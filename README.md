@@ -193,7 +193,8 @@ mingw32-make all
 	-winver 1281 ^
 	-create-environment-file true ^
 	-createdirs false ^
-	-asm intel
+	-asm intel ^
+	-tmpdir D:\Temp
 ```
 
 ## Параметры генератора Makefile
@@ -381,6 +382,12 @@ mingw32-make all
 Формат ассемблера: `att` или `intel`.
 
 По умолчанию `intel`.
+
+### tmpdir
+
+Задаёт каталог для промежуточных файлов компиляции.
+
+По умолчанию равно переменной окружения `TEMP`.
 
 ## Параметры для утилиты make
 

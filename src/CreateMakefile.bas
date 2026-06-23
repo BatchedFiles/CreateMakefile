@@ -84,6 +84,7 @@ Type Parameter
 	FbcCompilerName As ZString * (MAX_PATH + 1)
 	OutputFileName As ZString * (MAX_PATH + 1)
 	MainModuleName As ZString * (MAX_PATH + 1)
+	TempFolder As ZString * (MAX_PATH + 1)
 	ExeType As ExecutableType
 	FileSubsystem As Subsystem
 	Emitter As CodeEmitter
@@ -1672,10 +1673,15 @@ Private Function GetIncludesFromBasFile( _
 
 	' TODO Find a way to use parameters with spaces
 
+	Dim FileC As String = Replace(Filepath, ".bas", ".c")
+	Dim CFileWithoutPath As String = GetFileNameWithoutPath(FileC, p->SourceFolder)
+	Dim TempFile As String = BuildPath(p->TempFolder, CFileWithoutPath)
+
 	Dim ProgramName As String = _
 		"""" & CompilerFullName & """" & " " & _
 		FbcParam & " " & _
-		Filepath
+		Filepath & " " & _
+		"-o " & TempFile
 	Print ProgramName
 
 	Dim FileNumber As Long = Freefile()
@@ -1689,12 +1695,10 @@ Private Function GetIncludesFromBasFile( _
 
 	Close(FileNumber)
 
-	Dim FileC As String = Replace(Filepath, ".bas", ".c")
-
-	AddLibraries(FileC)
+	AddLibraries(TempFile)
 
 	' Remove temporary "c" file
-	Kill(FileC)
+	Kill(TempFile)
 
 	' TODO Get error code from child process
 	' If code > 0 Then
@@ -1836,6 +1840,7 @@ Private Function ParseCommandLine( _
 	p->FbcCompilerName = ""
 	p->OutputFileName = "a"
 	p->MainModuleName = ""
+	p->TempFolder = Environ("TEMP")
 	p->ExeType = OUTPUT_FILETYPE_EXE
 	p->FileSubsystem = SUBSYSTEM_CONSOLE
 	p->Emitter = CODE_EMITTER_GCC
@@ -1878,6 +1883,9 @@ Private Function ParseCommandLine( _
 
 			Case "-module"
 				p->MainModuleName = sValue
+
+			Case "-tmpdir"
+				p->TempFolder = sValue
 
 			Case "-exetype"
 
@@ -2064,6 +2072,7 @@ Private Sub PrintAllParameters( _
 	Print "Include path", p->IncludePath
 	Print "Output file name", p->OutputFileName
 	Print "Main module name", p->MainModuleName
+	Print "Temporary directory", p->TempFolder
 
 	Scope
 		Dim sExeType As String
