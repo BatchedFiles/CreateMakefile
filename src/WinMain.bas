@@ -321,37 +321,39 @@ Private Sub CreateMakefile_OnClick( _
 		MAX_PATH _
 	)
 
-	' "args": [
-	' 	/* "-makefile", "Makefile", */
-	' 	"-src", "src",
-	' 	"-fbc-path", "C:\\Program Files (x86)\\FreeBASIC-1.10.1-winlibs-gcc-9.3.0",
-	' 	/* include path */
-	' 	"-i", "C:\\Program Files (x86)\\FreeBASIC-1.10.1-winlibs-gcc-9.3.0\\inc",
-	' 	"-fbc", "fbc64.exe",
-	' 	"-out", "cmf-gui",
-	' 	/* Main module filename */
-	' 	"-module", "WinMain",
-	' 	"-exetype", "exe",
-	' 	/* console, windows, native */
-	' 	"-subsystem", "windows",
-	' 	"-emitter", "gcc",
-	' 	"-fix", "true",
-	' 	"-unicode", "true",
-	' 	"-wrt", "true",
-	' 	"-addressaware", "true",
-	' 	"-multithreading", "false",
-	' 	"-usefilesuffix", "true",
-	' 	"-pedantic", "true",
-	' 	"-create-environment-file", "true",
-	' 	"-winver", "1280",
-	' ],
+	Dim param As GenerateParameter = Any
+	param.hInst = self->hInst
+	param.GeneratorProcessName = @GeneratorProcessName
+	param.CurrentDirectory = @ProjectPath
+	' MakefileFileName As TCHAR Ptr
+	param.SourceFolder = @SourcePath
+	param.CompilerPath = @CompilerProcessName
+	' IncludePath As TCHAR Ptr
+	' FbcCompilerName As TCHAR Ptr
+	param.OutputFileName = @OutputFilename
+	param.MainModuleName = @MainModuleName
+	' ExeType As ExecutableType
+	' FileSubsystem As Subsystem
+	' Emitter As CodeEmitter
+	' FixEmittedCode As FixCode
+	' UnicodeFlag As UseUnicode
+	' UseFbRuntimeLibrary As UseFbRuntime
+	' UseCRuntimeLibrary As UseCRuntime
+	' AddressAware As ProcessAddressSpace
+	' ThreadingMode As MultiThreading
+	' UseEnvironmentFile As UseSettingsEnvironment
+	' MinimalOSVersion As Integer
+	' UseFileSuffix As Boolean
+	' Pedantic As Boolean
+	' CreateDirs As Boolean
 
-	' Создать дочерний процесс
-
-	' Выдать результат — показать диалог прогресса
-	' чтобы нельзя было переместиться в основное окно и запустить когда не готово
-	' Диалог создаёт процесс и запускает его
-	' Диалог только данные для процесса получает
+	Dim resDialog As INT_PTR = DialogBoxParam( _
+		self->hInst, _
+		MAKEINTRESOURCE(IDD_DLG_CHILDPROCESS), _
+		HWND_DESKTOP, _
+		@GenerateDialogProc, _
+		Cast(LPARAM, @param) _
+	)
 
 End Sub
 
