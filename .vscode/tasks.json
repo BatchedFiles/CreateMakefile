@@ -9,8 +9,7 @@
 				/* "-makefile", "Makefile", */
 				"-src", "src",
 				"-fbc-path", "C:\\Program Files (x86)\\FreeBASIC-1.10.1-winlibs-gcc-9.3.0",
-				/* include path */
-				"-i", "C:\\Program Files (x86)\\FreeBASIC-1.10.1-winlibs-gcc-9.3.0\\inc",
+				/* "-i", "C:\\Program Files (x86)\\FreeBASIC-1.10.1-winlibs-gcc-9.3.0\\inc", */
 				"-fbc", "fbc64.exe",
 				"-out", "cmf-gui",
 				/* Main module filename */
@@ -19,15 +18,21 @@
 				/* console, windows, native */
 				"-subsystem", "windows",
 				"-emitter", "gcc",
-				"-fix", "true",
+				"-fix", "false",
 				"-unicode", "true",
 				"-wrt", "true",
 				"-addressaware", "true",
 				"-multithreading", "false",
-				"-usefilesuffix", "true",
+				"-usefilesuffix", "false",
 				"-pedantic", "true",
 				"-create-environment-file", "true",
 				"-winver", "1280",
+				"-createdirs", "false",
+				"-asm", "intel",
+				"-tmpdir", "D:\\Temp",
+				"-useldlinker", "true",
+				"-flto", "false",
+				"-target-triplet", "x86_64-w64-mingw32",
 			],
 			"problemMatcher": [],
 			"group": {
