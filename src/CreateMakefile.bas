@@ -1299,12 +1299,7 @@ Private Sub WriteLinkerFlags( _
 
 	Print #MakefileStream,
 
-End Sub
-
-Private Sub WriteLinkerLibraries( _
-		ByVal MakefileStream As Long, _
-		ByVal p As Parameter Ptr _
-	)
+	' Libraryes
 
 	Select Case p->Emitter
 
@@ -2391,7 +2386,6 @@ Scope
 	WriteAsmFlags(MakefileNumber)
 	WriteGorcFlags(MakefileNumber)
 	WriteLinkerFlags(MakefileNumber, pParams)
-	WriteLinkerLibraries(MakefileNumber, pParams)
 
 	WriteDependencies(DepsVector(), MakefileNumber, pParams)
 
