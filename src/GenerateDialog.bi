@@ -65,6 +65,9 @@ Const WINVER_XP = 1281
 Const WINVER_DEFAULT = WINVER_XP
 
 Type GenerateParameter
+	hInst As HINSTANCE
+	GeneratorProcessName As TCHAR Ptr
+	CurrentDirectory As TCHAR Ptr
 	MakefileFileName As TCHAR Ptr
 	SourceFolder As TCHAR Ptr
 	CompilerPath As TCHAR Ptr
@@ -86,10 +89,6 @@ Type GenerateParameter
 	UseFileSuffix As Boolean
 	Pedantic As Boolean
 	CreateDirs As Boolean
-End Type
-
-Type GenerateForm
-	hInst As HINSTANCE
 End Type
 
 Declare Function GenerateDialogProc( _
