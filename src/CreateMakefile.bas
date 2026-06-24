@@ -736,11 +736,12 @@ Private Function WriteSetenvWin32( _
 			Next
 			StartLibraryes = StartLibraryes & ObjCrtStartExe(UBound(ObjCrtStartExe)).LibName
 
-			For i As Integer = LBound(ObjCrtEndExe) To UBound(ObjCrtEndExe) - 1
-				If ObjCrtEndExe(i).Used Then
-					EndLibraryes = EndLibraryes & ObjCrtEndExe(i).LibName & " "
-				End If
-			Next
+			' TODO Ложное предупреждение о границе массива
+			' For i As Integer = LBound(ObjCrtEndExe) To UBound(ObjCrtEndExe) - 1
+			' 	If ObjCrtEndExe(i).Used Then
+			' 		EndLibraryes = EndLibraryes & ObjCrtEndExe(i).LibName & " "
+			' 	End If
+			' Next
 			EndLibraryes = EndLibraryes & ObjCrtEndExe(UBound(ObjCrtEndExe)).LibName
 
 			Print #oStream, "set OBJ_CRT_START=" & StartLibraryes
@@ -757,11 +758,12 @@ Private Function WriteSetenvWin32( _
 			Next
 			StartLibraryes = StartLibraryes & ObjCrtStartDll(UBound(ObjCrtStartDll)).LibName
 
-			For i As Integer = LBound(ObjCrtEndDll) To UBound(ObjCrtEndDll) - 1
-				If ObjCrtEndDll(i).Used Then
-					EndLibraryes = EndLibraryes & ObjCrtEndDll(i).LibName & " "
-				End If
-			Next
+			' TODO Ложное предупреждение о границе массива
+			' For i As Integer = LBound(ObjCrtEndDll) To UBound(ObjCrtEndDll) - 1
+			' 	If ObjCrtEndDll(i).Used Then
+			' 		EndLibraryes = EndLibraryes & ObjCrtEndDll(i).LibName & " "
+			' 	End If
+			' Next
 			EndLibraryes = EndLibraryes & ObjCrtEndDll(UBound(ObjCrtEndDll)).LibName
 
 			Print #oStream, "set OBJ_CRT_START=" & StartLibraryes
