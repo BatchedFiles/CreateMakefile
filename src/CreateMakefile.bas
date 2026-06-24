@@ -2309,8 +2309,8 @@ If pParams->ExeType = OUTPUT_FILETYPE_DLL Then
 	Else
 		If pParams->UseCRuntimeLibrary Then
 			LibsWinNT(4).Used = True
-		Else
 		End If
+	End If
 End If
 
 LibsWinAPI = 0
