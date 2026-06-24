@@ -85,6 +85,9 @@ Type Parameter
 	OutputFileName As ZString * (MAX_PATH + 1)
 	MainModuleName As ZString * (MAX_PATH + 1)
 	TempFolder As ZString * (MAX_PATH + 1)
+	ParamSeparator As ZString * (MAX_PATH + 1)
+	PathSeparator As ZString * (MAX_PATH + 1)
+	MovePathSeparator As ZString * (MAX_PATH + 1)
 	ExeType As ExecutableType
 	FileSubsystem As Subsystem
 	Emitter As CodeEmitter
@@ -101,6 +104,7 @@ Type Parameter
 	Pedantic As Boolean
 	CreateDirs As Boolean
 	UseLdLinker As Boolean
+	Flto As Boolean
 End Type
 
 Dim Shared ObjCrtStartExe(0 To ...) As LibraryItem = { _
@@ -605,13 +609,16 @@ Private Function WriteSetenvWin32( _
 	Print #oStream, "set GORC=""%FBC_DIR%\%BinFolder%\GoRC.exe"""
 	Print #oStream, "set LD=""%FBC_DIR%\%BinFolder%\ld.exe"""
 	Print #oStream, "set DLL_TOOL=""%FBC_DIR%\%BinFolder%\dlltool.exe"""
+	Print #oStream, "rem Linker script only for GCC x86, GCC x64 and Clang x86"
+	Print #oStream, "rem Without quotes:"
+	Print #oStream, "set LD_SCRIPT=%LIB_DIR%\fbextra.x"
 	Print #oStream,
 
 	Print #oStream, "rem Parameter separator for gnu make //"
 	Print #oStream, "rem or / for mingw32-make"
-	Print #oStream, "set PARAM_SEP=/"
-	Print #oStream, "set PATH_SEP=/"
-	Print #oStream, "set MOVE_PATH_SEP=\\"
+	Print #oStream, "set PARAM_SEP=" & p->ParamSeparator
+	Print #oStream, "set PATH_SEP=" & p->PathSeparator
+	Print #oStream, "set MOVE_PATH_SEP=" & p->MovePathSeparator
 	Print #oStream, "set DELETE_COMMAND=%ComSpec% $(PARAM_SEP)c del $(PARAM_SEP)f $(PARAM_SEP)q"
 	Print #oStream, "set MKDIR_COMMAND=%ComSpec% $(PARAM_SEP)c mkdir"
 
@@ -692,21 +699,26 @@ Private Function WriteSetenvWin32( _
 	Print #oStream, "rem set LDFLAGS="
 	Print #oStream,
 
-	Print #oStream, "rem Linker script only for GCC x86, GCC x64 and Clang x86"
-	Print #oStream, "rem Without quotes:"
-	Print #oStream, "set LD_SCRIPT=%LIB_DIR%\fbextra.x"
-	Print #oStream,
+	' Target triplet
+	' x86_64-w64-mingw32
+	' i686-w64-mingw32
+
 	Print #oStream, "rem Only for Clang x86"
 	Print #oStream, "rem set TARGET_TRIPLET=i686-pc-windows-gnu"
 	Print #oStream,
 	Print #oStream, "rem Only for Clang AMD64"
 	Print #oStream, "rem set TARGET_TRIPLET=x86_64-w64-pc-windows-msvc"
 	Print #oStream,
-	Print #oStream, "rem Link Time Optimization for release target"
-	Print #oStream, "rem set FLTO=-flto"
-
 	Print #oStream, "rem Only for wasm"
 	Print #oStream, "rem set TARGET_TRIPLET=wasm32"
+	Print #oStream,
+
+	Print #oStream, "rem Link Time Optimization for release target"
+	If p->Flto Then
+		Print #oStream, "set FLTO=-flto"
+	Else
+		Print #oStream, "rem set FLTO=-flto"
+	End If
 	Print #oStream,
 
 	Print #oStream, "rem Libraries list"
@@ -1847,6 +1859,9 @@ Private Function ParseCommandLine( _
 	p->OutputFileName = "a"
 	p->MainModuleName = ""
 	p->TempFolder = Environ("TEMP")
+	p->ParamSeparator = "/"
+	p->PathSeparator = "/"
+	p->MovePathSeparator = "\\"
 	p->ExeType = OUTPUT_FILETYPE_EXE
 	p->FileSubsystem = SUBSYSTEM_CONSOLE
 	p->Emitter = CODE_EMITTER_GCC
@@ -1863,6 +1878,7 @@ Private Function ParseCommandLine( _
 	p->Pedantic = False
 	p->CreateDirs = False
 	p->UseLdLinker = True
+	p->Flto = False
 
 	For i As Integer = 1 To ArgC - 1 Step 2
 		Dim sKey As String = *ArgV[i]
@@ -2010,6 +2026,11 @@ Private Function ParseCommandLine( _
 			Case "-useldlinker"
 				If sValue = "false" Then
 					p->UseLdLinker = False
+				End If
+
+			Case "-flto"
+				If sValue = "true" Then
+					p->Flto = True
 				End If
 
 			Case "-asm"
@@ -2249,6 +2270,16 @@ Private Sub PrintAllParameters( _
 			sUseLdLinker = "false"
 		End If
 		Print "Create bin obj directories", sUseLdLinker
+	End Scope
+
+	Scope
+		Dim sFlto As String
+		If p->Flto Then
+			sFlto = "true"
+		Else
+			sFlto = "false"
+		End If
+		Print "Lifetime Optimization", sFlto
 	End Scope
 
 	Print ""

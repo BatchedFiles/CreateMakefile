@@ -195,7 +195,8 @@ mingw32-make all
 	-createdirs false ^
 	-asm intel ^
 	-tmpdir D:\Temp ^
-	-useldlinker true
+	-useldlinker true ^
+	-flto false
 ```
 
 ## Параметры генератора Makefile
@@ -395,6 +396,12 @@ mingw32-make all
 Использовать линковщик `LD`.
 
 По умолчанию `true`.
+
+### flto
+
+Использовать межмодульную оптимизацию для цели `release`.
+
+По умолчанию `false`.
 
 ## Параметры для утилиты make
 
