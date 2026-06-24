@@ -1859,6 +1859,9 @@ Private Function ParseCommandLine( _
 	p->OutputFileName = "a"
 	p->MainModuleName = ""
 	p->TempFolder = Environ("TEMP")
+	If Len(p->TempFolder) = 0 Then
+		p->TempFolder = Environ("TMP")
+	End If
 	p->ParamSeparator = "/"
 	p->PathSeparator = "/"
 	p->MovePathSeparator = "\\"
