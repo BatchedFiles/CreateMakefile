@@ -194,7 +194,8 @@ mingw32-make all
 	-create-environment-file true ^
 	-createdirs false ^
 	-asm intel ^
-	-tmpdir D:\Temp
+	-tmpdir D:\Temp ^
+	-useldlinker true
 ```
 
 ## Параметры генератора Makefile
@@ -388,6 +389,12 @@ mingw32-make all
 Задаёт каталог для промежуточных файлов компиляции.
 
 По умолчанию равно переменной окружения `TEMP`.
+
+### useldlinker
+
+Использовать линковщик `LD`.
+
+По умолчанию `true`.
 
 ## Параметры для утилиты make
 

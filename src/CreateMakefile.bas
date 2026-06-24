@@ -100,6 +100,7 @@ Type Parameter
 	UseFileSuffix As Boolean
 	Pedantic As Boolean
 	CreateDirs As Boolean
+	UseLdLinker As Boolean
 End Type
 
 Dim Shared ObjCrtStartExe(0 To ...) As LibraryItem = { _
@@ -629,10 +630,18 @@ Private Function WriteSetenvWin32( _
 	End If
 
 	Print #oStream, "rem Set FALSE to disable c-runtime libraries"
-	Print #oStream, "set USE_CRUNTIME=TRUE"
+	If p->UseCRuntimeLibrary Then
+		Print #oStream, "set USE_CRUNTIME=TRUE"
+	Else
+		Print #oStream, "set USE_CRUNTIME=FALSE"
+	End If
 
 	Print #oStream, "rem Set TRUE to use default ld linker"
-	Print #oStream, "set USE_LD_LINKER=TRUE"
+	If p->UseLdLinker Then
+		Print #oStream, "set USE_LD_LINKER=TRUE"
+	Else
+		Print #oStream, "set USE_LD_LINKER=FALSE"
+	End If
 
 	Print #oStream, "rem WinAPI version"
 	Print #oStream, "set WINVER=" & p->MinimalOSVersion
@@ -1651,8 +1660,10 @@ Private Sub AddLibraries( _
 			End Scope
 
 			For i As Integer = LBound(Libs) To UBound(Libs) - 1 Step 2
-				Dim LibName As String = Libs(i) & Libs(i + 1)
-				AddLibrary(LibName)
+				If Libs(i) = "-l" Then
+					Dim LibName As String = Libs(i) & Libs(i + 1)
+					AddLibrary(LibName)
+				End If
 			Next
 
 			Exit Do
@@ -1856,6 +1867,7 @@ Private Function ParseCommandLine( _
 	p->UseFileSuffix = False
 	p->Pedantic = False
 	p->CreateDirs = False
+	p->UseLdLinker = True
 
 	For i As Integer = 1 To ArgC - 1 Step 2
 		Dim sKey As String = *ArgV[i]
@@ -1998,6 +2010,11 @@ Private Function ParseCommandLine( _
 			Case "-createdirs"
 				If sValue = "true" Then
 					p->CreateDirs = True
+				End If
+
+			Case "-useldlinker"
+				If sValue = "false" Then
+					p->UseLdLinker = False
 				End If
 
 			Case "-asm"
@@ -2229,6 +2246,16 @@ Private Sub PrintAllParameters( _
 		Print "Create bin obj directories", sCreateDirs
 	End Scope
 
+	Scope
+		Dim sUseLdLinker As String
+		If p->UseLdLinker Then
+			sUseLdLinker = "true"
+		Else
+			sUseLdLinker = "false"
+		End If
+		Print "Create bin obj directories", sUseLdLinker
+	End Scope
+
 	Print ""
 
 End Sub
@@ -2275,9 +2302,15 @@ Scope
 End Scope
 
 If pParams->ExeType = OUTPUT_FILETYPE_DLL Then
-	LibsWin95(6).Used = True
-	LibsWin95(11).Used = True
-	LibsWinNT(4).Used = True
+	If pParams->UseFbRuntimeLibrary Then
+		LibsWin95(6).Used = True
+		LibsWin95(11).Used = True
+		LibsWinNT(4).Used = True
+	Else
+		If pParams->UseCRuntimeLibrary Then
+			LibsWinNT(4).Used = True
+		Else
+		End If
 End If
 
 LibsWinAPI = 0
