@@ -88,6 +88,7 @@ Type Parameter
 	ParamSeparator As ZString * (MAX_PATH + 1)
 	PathSeparator As ZString * (MAX_PATH + 1)
 	MovePathSeparator As ZString * (MAX_PATH + 1)
+	TargetTriplet As ZString * (MAX_PATH + 1)
 	ExeType As ExecutableType
 	FileSubsystem As Subsystem
 	Emitter As CodeEmitter
@@ -699,10 +700,9 @@ Private Function WriteSetenvWin32( _
 	Print #oStream, "rem set LDFLAGS="
 	Print #oStream,
 
-	' Target triplet
-	' x86_64-w64-mingw32
-	' i686-w64-mingw32
-
+	Print #oStream, "rem Target triplet"
+	Print #oStream, "set TARGET_TRIPLET=" & p->TargetTriplet
+	Print #oStream,
 	Print #oStream, "rem Only for Clang x86"
 	Print #oStream, "rem set TARGET_TRIPLET=i686-pc-windows-gnu"
 	Print #oStream,
@@ -1862,6 +1862,7 @@ Private Function ParseCommandLine( _
 	p->ParamSeparator = "/"
 	p->PathSeparator = "/"
 	p->MovePathSeparator = "\\"
+	p->TargetTriplet = "x86_64-w64-mingw32"
 	p->ExeType = OUTPUT_FILETYPE_EXE
 	p->FileSubsystem = SUBSYSTEM_CONSOLE
 	p->Emitter = CODE_EMITTER_GCC
@@ -2106,6 +2107,7 @@ Private Sub PrintAllParameters( _
 	Print "Output file name", p->OutputFileName
 	Print "Main module name", p->MainModuleName
 	Print "Temporary directory", p->TempFolder
+	Print "Target triplet", p->TargetTriplet
 
 	Scope
 		Dim sExeType As String

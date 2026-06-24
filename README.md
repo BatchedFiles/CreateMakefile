@@ -196,7 +196,8 @@ mingw32-make all
 	-asm intel ^
 	-tmpdir D:\Temp ^
 	-useldlinker true ^
-	-flto false
+	-flto false ^
+	-target-triplet x86_64-w64-mingw32
 ```
 
 ## Параметры генератора Makefile
@@ -402,6 +403,12 @@ mingw32-make all
 Использовать межмодульную оптимизацию для цели `release`.
 
 По умолчанию `false`.
+
+### target-triplet
+
+Триплет целевой архитектуры.
+
+По умолчанию `x86_64-w64-mingw32`.
 
 ## Параметры для утилиты make
 
