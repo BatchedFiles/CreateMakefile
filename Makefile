@@ -32,13 +32,12 @@ RUNTIME = _RT
 else
 RUNTIME = _WRT
 endif
-OUTPUT_FILE_NAME ?= windows$(FILE_SUFFIX).exe
+OUTPUT_FILE_NAME ?= cmf-gui$(FILE_SUFFIX).exe
 
 PARAM_SEP ?= /
 PATH_SEP ?= /
 MOVE_PATH_SEP ?= \\
 
-MOVE_COMMAND ?= $(ComSpec) $(PARAM_SEP)c move $(PARAM_SEP)y
 DELETE_COMMAND ?= $(ComSpec) $(PARAM_SEP)c del $(PARAM_SEP)f $(PARAM_SEP)q
 MKDIR_COMMAND ?= $(ComSpec) $(PARAM_SEP)c mkdir
 CPREPROCESSOR_COMMAND ?= $(ComSpec) $(PARAM_SEP)c echo no need to fix code
@@ -101,10 +100,10 @@ else
 CFLAGS+=-m32
 endif
 CFLAGS+=-march=$(MARCH)
-CFLAGS+=-pipe
-CFLAGS+=-Wall -Werror -Wextra -pedantic
+CFLAGS+=-pipe -masm=intel
+CFLAGS+=-Wall -Wextra -Wshadow -Wpointer-arith -Wcast-qual
+CFLAGS+=-pedantic
 CFLAGS+=-Wno-unused-label -Wno-unused-function
-CFLAGS+=-Wno-unused-parameter -Wno-unused-variable
 CFLAGS+=-Wno-dollar-in-identifier-extension
 CFLAGS+=-Wno-language-extension-token
 CFLAGS+=-Wno-parentheses-equality
@@ -113,7 +112,8 @@ CFLAGS_DEBUG+=-g -O0
 release: CFLAGS+=$(CFLAGS_RELEASE)
 release: CFLAGS+=-fno-math-errno -fno-exceptions
 release: CFLAGS+=-fno-unwind-tables -fno-asynchronous-unwind-tables
-release: CFLAGS+=-O3 -fno-ident -fdata-sections -ffunction-sections
+release: CFLAGS+=-O3 -fno-ident
+release: CFLAGS+=-fdata-sections -ffunction-sections
 ifneq ($(FLTO),)
 release: CFLAGS+=-flto
 endif
@@ -177,10 +177,11 @@ LDFLAGS+=-L "$(LIB_DIR)"
 ifneq ($(LD_SCRIPT),)
 LDFLAGS+=-T "$(LD_SCRIPT)"
 endif
+release: LDFLAGS+=-s
 ifeq ($(USE_LD_LINKER),TRUE)
-release: LDFLAGS+=-s --gc-sections
+release: LDFLAGS+=--gc-sections
 else
-release: LDFLAGS+=-s -Wl,--gc-sections
+release: LDFLAGS+=-Wl,--gc-sections
 endif
 ifneq ($(FLTO),)
 release: LDFLAGS+=-flto
@@ -202,45 +203,45 @@ LDLIBS+=-Wl,--end-group
 endif
 LDLIBSEND+=$(OBJ_CRT_END)
 
+OBJECTFILES_DEBUG+=$(OBJ_DEBUG_DIR)$(PATH_SEP)GenerateDialog$(FILE_SUFFIX).o
+OBJECTFILES_RELEASE+=$(OBJ_RELEASE_DIR)$(PATH_SEP)GenerateDialog$(FILE_SUFFIX).o
+
+DEPENDENCIES_2=src$(PATH_SEP)GenerateDialog.bas src$(PATH_SEP)GenerateDialog.bi src$(PATH_SEP)resources.rh
+
+$(OBJ_DEBUG_DIR)$(PATH_SEP)GenerateDialog$(FILE_SUFFIX).c: $(DEPENDENCIES_2)
+$(OBJ_RELEASE_DIR)$(PATH_SEP)GenerateDialog$(FILE_SUFFIX).c: $(DEPENDENCIES_2)
+
 OBJECTFILES_DEBUG+=$(OBJ_DEBUG_DIR)$(PATH_SEP)mini-runtime$(FILE_SUFFIX).o
 OBJECTFILES_RELEASE+=$(OBJ_RELEASE_DIR)$(PATH_SEP)mini-runtime$(FILE_SUFFIX).o
 
-DEPENDENCIES_2=src$(PATH_SEP)mini-runtime.bas
+DEPENDENCIES_3=src$(PATH_SEP)mini-runtime.bas
 
-$(OBJ_DEBUG_DIR)$(PATH_SEP)mini-runtime$(FILE_SUFFIX).c: $(DEPENDENCIES_2)
-$(OBJ_RELEASE_DIR)$(PATH_SEP)mini-runtime$(FILE_SUFFIX).c: $(DEPENDENCIES_2)
+$(OBJ_DEBUG_DIR)$(PATH_SEP)mini-runtime$(FILE_SUFFIX).c: $(DEPENDENCIES_3)
+$(OBJ_RELEASE_DIR)$(PATH_SEP)mini-runtime$(FILE_SUFFIX).c: $(DEPENDENCIES_3)
 
 OBJECTFILES_DEBUG+=$(OBJ_DEBUG_DIR)$(PATH_SEP)Registry$(FILE_SUFFIX).o
 OBJECTFILES_RELEASE+=$(OBJ_RELEASE_DIR)$(PATH_SEP)Registry$(FILE_SUFFIX).o
 
-DEPENDENCIES_3=src$(PATH_SEP)Registry.bas src$(PATH_SEP)Registry.bi
+DEPENDENCIES_4=src$(PATH_SEP)Registry.bas src$(PATH_SEP)Registry.bi
 
-$(OBJ_DEBUG_DIR)$(PATH_SEP)Registry$(FILE_SUFFIX).c: $(DEPENDENCIES_3)
-$(OBJ_RELEASE_DIR)$(PATH_SEP)Registry$(FILE_SUFFIX).c: $(DEPENDENCIES_3)
+$(OBJ_DEBUG_DIR)$(PATH_SEP)Registry$(FILE_SUFFIX).c: $(DEPENDENCIES_4)
+$(OBJ_RELEASE_DIR)$(PATH_SEP)Registry$(FILE_SUFFIX).c: $(DEPENDENCIES_4)
 
 OBJECTFILES_DEBUG+=$(OBJ_DEBUG_DIR)$(PATH_SEP)WinMain$(FILE_SUFFIX).o
 OBJECTFILES_RELEASE+=$(OBJ_RELEASE_DIR)$(PATH_SEP)WinMain$(FILE_SUFFIX).o
 
-DEPENDENCIES_4=src$(PATH_SEP)WinMain.bas src$(PATH_SEP)GenerateDialog.bi src$(PATH_SEP)resources.rh src$(PATH_SEP)Registry.bi
+DEPENDENCIES_5=src$(PATH_SEP)WinMain.bas src$(PATH_SEP)GenerateDialog.bi src$(PATH_SEP)resources.rh src$(PATH_SEP)Registry.bi
 
-$(OBJ_DEBUG_DIR)$(PATH_SEP)WinMain$(FILE_SUFFIX).c: $(DEPENDENCIES_4)
-$(OBJ_RELEASE_DIR)$(PATH_SEP)WinMain$(FILE_SUFFIX).c: $(DEPENDENCIES_4)
+$(OBJ_DEBUG_DIR)$(PATH_SEP)WinMain$(FILE_SUFFIX).c: $(DEPENDENCIES_5)
+$(OBJ_RELEASE_DIR)$(PATH_SEP)WinMain$(FILE_SUFFIX).c: $(DEPENDENCIES_5)
 
-OBJECTFILES_DEBUG+=$(OBJ_DEBUG_DIR)$(PATH_SEP)GenerateDialog$(FILE_SUFFIX).o
-OBJECTFILES_RELEASE+=$(OBJ_RELEASE_DIR)$(PATH_SEP)GenerateDialog$(FILE_SUFFIX).o
+OBJECTFILES_DEBUG+=$(OBJ_DEBUG_DIR)$(PATH_SEP)resources.rc
+OBJECTFILES_RELEASE+=$(OBJ_RELEASE_DIR)$(PATH_SEP)resources.rc
 
-DEPENDENCIES_5=src$(PATH_SEP)GenerateDialog.bas src$(PATH_SEP)resources.rh src$(PATH_SEP)GenerateDialog.bi
+DEPENDENCIES_6=src$(PATH_SEP)resources.rc src$(PATH_SEP)resources.rh src$(PATH_SEP)manifest.xml
 
-$(OBJ_DEBUG_DIR)$(PATH_SEP)GenerateDialog$(FILE_SUFFIX).c: $(DEPENDENCIES_4)
-$(OBJ_RELEASE_DIR)$(PATH_SEP)GenerateDialog$(FILE_SUFFIX).c: $(DEPENDENCIES_4)
-
-OBJECTFILES_DEBUG+=$(OBJ_DEBUG_DIR)$(PATH_SEP)resources$(FILE_SUFFIX).obj
-OBJECTFILES_RELEASE+=$(OBJ_RELEASE_DIR)$(PATH_SEP)resources$(FILE_SUFFIX).obj
-
-DEPENDENCIES_5=src$(PATH_SEP)resources.rc src$(PATH_SEP)resources.RH src$(PATH_SEP)manifest.xml
-
-$(OBJ_DEBUG_DIR)$(PATH_SEP)resources.rc: $(DEPENDENCIES_5)
-$(OBJ_RELEASE_DIR)$(PATH_SEP)resources.rc: $(DEPENDENCIES_5)
+$(OBJ_DEBUG_DIR)$(PATH_SEP)resources.rc: $(DEPENDENCIES_6)
+$(OBJ_RELEASE_DIR)$(PATH_SEP)resources.rc: $(DEPENDENCIES_6)
 
 release: $(BIN_RELEASE_DIR)$(PATH_SEP)$(OUTPUT_FILE_NAME)
 
@@ -282,18 +283,14 @@ $(OBJ_RELEASE_DIR)$(PATH_SEP)%$(FILE_SUFFIX).asm: $(OBJ_RELEASE_DIR)$(PATH_SEP)%
 $(OBJ_DEBUG_DIR)$(PATH_SEP)%$(FILE_SUFFIX).asm: $(OBJ_DEBUG_DIR)$(PATH_SEP)%$(FILE_SUFFIX).c
 	$(CC) $(EXTRA_CFLAGS) $(CFLAGS) -o $@ $<
 
-$(OBJ_RELEASE_DIR)$(PATH_SEP)%$(FILE_SUFFIX).obj: src$(PATH_SEP)%.rc
+$(OBJ_RELEASE_DIR)$(PATH_SEP)%$(FILE_SUFFIX).obj: src$(PATH_SEP)%.RC
 	$(GORC) $(GORCFLAGS) $(PARAM_SEP)fo $@ $<
 
-$(OBJ_DEBUG_DIR)$(PATH_SEP)%$(FILE_SUFFIX).obj: src$(PATH_SEP)%.rc
+$(OBJ_DEBUG_DIR)$(PATH_SEP)%$(FILE_SUFFIX).obj: src$(PATH_SEP)%.RC
 	$(GORC) $(GORCFLAGS) $(PARAM_SEP)fo $@ $<
 
 $(OBJ_RELEASE_DIR)$(PATH_SEP)%$(FILE_SUFFIX).c: src$(PATH_SEP)%.bas
-	$(FBC) $(FBCFLAGS) $<
-	$(CPREPROCESSOR_COMMAND) -release src$(MOVE_PATH_SEP)$*.c
-	$(MOVE_COMMAND) src$(MOVE_PATH_SEP)$*.c $(OBJ_RELEASE_DIR_MOVE)$(MOVE_PATH_SEP)$*$(FILE_SUFFIX).c
+	$(FBC) $(FBCFLAGS) $< -o $(OBJ_RELEASE_DIR)$(PATH_SEP)$*$(FILE_SUFFIX).c
 
 $(OBJ_DEBUG_DIR)$(PATH_SEP)%$(FILE_SUFFIX).c: src$(PATH_SEP)%.bas
-	$(FBC) $(FBCFLAGS) $<
-	$(CPREPROCESSOR_COMMAND) -debug src$(MOVE_PATH_SEP)$*.c
-	$(MOVE_COMMAND) src$(MOVE_PATH_SEP)$*.c $(OBJ_DEBUG_DIR_MOVE)$(MOVE_PATH_SEP)$*$(FILE_SUFFIX).c
+	$(FBC) $(FBCFLAGS) $< -o $(OBJ_DEBUG_DIR)$(PATH_SEP)$*$(FILE_SUFFIX).c
