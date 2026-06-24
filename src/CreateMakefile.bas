@@ -1422,8 +1422,9 @@ Private Sub WriteApplicationTargets( _
 		Print #MakefileStream, vbTab & "$(DELETE_COMMAND) $(OBJ_DEBUG_DIR_MOVE)$(MOVE_PATH_SEP)$(OUTPUT_FILE_DEF)"
 		Print #MakefileStream, vbTab & "$(DELETE_COMMAND) $(BIN_RELEASE_DIR_MOVE)$(MOVE_PATH_SEP)$(OUTPUT_FILE_LIB)"
 		Print #MakefileStream, vbTab & "$(DELETE_COMMAND) $(BIN_DEBUG_DIR_MOVE)$(MOVE_PATH_SEP)$(OUTPUT_FILE_LIB)"
-		Print #MakefileStream,
 	End If
+
+	Print #MakefileStream,
 
 	Print #MakefileStream, "createdirs:"
 	Print #MakefileStream, vbTab & "$(MKDIR_COMMAND) $(BIN_DEBUG_DIR_MOVE)"
