@@ -1383,15 +1383,15 @@ Private Sub WriteObjectFiles( _
 	Dim ObjectFileNameWithDebug As String = "OBJECTFILES_DEBUG+=" & DebugDirPrefix & ObjectFileNameWithPathSep
 	Dim ObjectFileNameRelease As String = "OBJECTFILES_RELEASE+=" & ReleaseDirPrefix & ObjectFileNameWithPathSep
 
-	Dim DepsVariable As String = "DEPENDENCIES" & "_" & Str(DependenciesNumber) & "=" & DependenciesLine
+	Dim DepsVariable As String = "DEPENDENCIES_" & Str(DependenciesNumber) & "=" & DependenciesLine
 
 	Print #MakefileStream, ObjectFileNameWithDebug
 	Print #MakefileStream, ObjectFileNameRelease
 	Print #MakefileStream,
 	Print #MakefileStream, DepsVariable
 	Print #MakefileStream,
-	Print #MakefileStream, FileNameWithDebug & ": " & "$(" & "DEPENDENCIES" & "_" & Str(DependenciesNumber) & ")"
-	Print #MakefileStream, FileNameWithRelease & ": " & "$(" & "DEPENDENCIES" & "_" & Str(DependenciesNumber) & ")"
+	Print #MakefileStream, FileNameWithDebug & ": $(DEPENDENCIES_" & Str(DependenciesNumber) & ")"
+	Print #MakefileStream, FileNameWithRelease & ": $(DEPENDENCIES_" & Str(DependenciesNumber) & ")"
 	Print #MakefileStream,
 
 End Sub
