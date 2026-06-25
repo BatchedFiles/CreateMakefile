@@ -1361,13 +1361,21 @@ Private Sub WriteObjectFiles( _
 	Dim FileNameCExtenstionWitthSuffix As String
 	Dim ObjectFileName As String
 
-	Dim Finded As Integer = InStr(BasFile, ".bas")
-	If Finded Then
+	Dim IsBasicFile As Integer = InStr(BasFile, ".bas")
+
+	If IsBasicFile Then
 		FileNameCExtenstionWitthSuffix = Replace(BasFileWithoutPath, ".bas", FileSuffix & ".c")
 		ObjectFileName = Replace(BasFileWithoutPath, ".bas", FileSuffix & ".o")
 	Else
-		FileNameCExtenstionWitthSuffix = Replace(BasFileWithoutPath, ".RC", FileSuffix & ".obj")
-		ObjectFileName = Replace(BasFileWithoutPath, ".RC", FileSuffix & ".obj")
+		Dim IsResUcase As Integer = InStr(BasFileWithoutPath, ".RC")
+
+		If IsResUcase Then
+			FileNameCExtenstionWitthSuffix = Replace(BasFileWithoutPath, ".RC", FileSuffix & ".obj")
+			ObjectFileName = Replace(BasFileWithoutPath, ".RC", FileSuffix & ".obj")
+		Else
+			FileNameCExtenstionWitthSuffix = Replace(BasFileWithoutPath, ".rc", FileSuffix & ".obj")
+			ObjectFileName = Replace(BasFileWithoutPath, ".rc", FileSuffix & ".obj")
+		End If
 	End If
 
 	Dim FileNameWithPathSep As String = ReplaceOSPathSeparatorToMakePathSeparator( _
