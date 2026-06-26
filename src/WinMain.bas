@@ -350,7 +350,7 @@ Private Sub CreateMakefile_OnClick( _
 	Dim resDialog As INT_PTR = DialogBoxParam( _
 		self->hInst, _
 		MAKEINTRESOURCE(IDD_DLG_CHILDPROCESS), _
-		HWND_DESKTOP, _
+		hWin, _
 		@GenerateDialogProc, _
 		Cast(LPARAM, @param) _
 	)
