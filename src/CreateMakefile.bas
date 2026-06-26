@@ -228,7 +228,11 @@ Private Function CreateCompilerParams( _
 	If p->UseFbRuntimeLibrary Then
 		ParamVector(2) = ""
 	Else
-		ParamVector(2) = "-d WITHOUT_RUNTIME"
+		If p->UseCRuntimeLibrary Then
+			ParamVector(2) = "-d WITHOUT_RUNTIME"
+		Else
+			ParamVector(2) = "-d WITHOUT_RUNTIME -d MAKE_BAREBONE"
+		End If
 	End If
 
 	If p->MinimalOSVersion Then
