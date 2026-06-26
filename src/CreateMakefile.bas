@@ -110,12 +110,13 @@ End Type
 
 Dim Shared ObjCrtStartExe(0 To ...) As LibraryItem = { _
 	Type("""%LIB_DIR%\crt2.o""", True), _
-	Type("""%LIB_DIR%\crtbegin.o""", True), _
-	Type("""%LIB_DIR%\fbrt0.o""", True) _
+	Type("""%LIB_DIR%\crtbegin.o""", True) _
 }
 Dim Shared ObjCrtStartDll(0 To ...) As LibraryItem = { _
 	Type("""%LIB_DIR%\dllcrt2.o""", True), _
-	Type("""%LIB_DIR%\crtbegin.o""", True), _
+	Type("""%LIB_DIR%\crtbegin.o""", True) _
+}
+Dim Shared ObjCrtStartFreeBASIC(0 To ...) As LibraryItem = { _
 	Type("""%LIB_DIR%\fbrt0.o""", True) _
 }
 Dim Shared ObjCrtEndExe(0 To ...) As LibraryItem = { _
@@ -746,6 +747,7 @@ Private Function WriteSetenvWin32( _
 			Next
 
 			Print #oStream, "set OBJ_CRT_START=" & RTrim(StartLibraryes)
+			Print #oStream, "set OBJ_FB_START=" & ObjCrtStartFreeBASIC(0).LibName
 			Print #oStream, "set OBJ_CRT_END=" & RTrim(EndLibraryes)
 
 		Case OUTPUT_FILETYPE_DLL
@@ -765,6 +767,7 @@ Private Function WriteSetenvWin32( _
 			Next
 
 			Print #oStream, "set OBJ_CRT_START=" & RTrim(StartLibraryes)
+			Print #oStream, "set OBJ_FB_START=" & ObjCrtStartFreeBASIC(0).LibName
 			Print #oStream, "set OBJ_CRT_END=" & RTrim(EndLibraryes)
 
 	End Select
@@ -1324,7 +1327,14 @@ Private Sub WriteLinkerFlags( _
 
 		Case Else
 			' mainCRTStartup libraries
+			Print #MakefileStream, "ifeq ($(USE_RUNTIME),TRUE)"
 			Print #MakefileStream, "LDLIBSBEGIN+=$(OBJ_CRT_START)"
+			Print #MakefileStream, "LDLIBSBEGIN+=$(OBJ_FB_START)"
+			Print #MakefileStream, "else"
+			Print #MakefileStream, "ifeq ($(USE_CRUNTIME),TRUE)"
+			Print #MakefileStream, "LDLIBSBEGIN+=$(OBJ_CRT_START)"
+			Print #MakefileStream, "endif"
+			Print #MakefileStream, "endif"
 
 			Print #MakefileStream, "ifeq ($(USE_LD_LINKER),TRUE)"
 			Print #MakefileStream, "LDLIBS+=--start-group"
@@ -1342,7 +1352,9 @@ Private Sub WriteLinkerFlags( _
 			Print #MakefileStream, "endif"
 
 			' Crtend libraries
+			Print #MakefileStream, "ifeq ($(USE_CRUNTIME),TRUE)"
 			Print #MakefileStream, "LDLIBSEND+=$(OBJ_CRT_END)"
+			Print #MakefileStream, "endif"
 
 	End Select
 
