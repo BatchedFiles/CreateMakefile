@@ -1014,6 +1014,10 @@ Private Sub WriteFbcFlags( _
 	Print #MakefileStream, "ifeq ($(USE_RUNTIME),TRUE)"
 	Print #MakefileStream, "else"
 	Print #MakefileStream, "FBCFLAGS+=-d WITHOUT_RUNTIME"
+	Print #MakefileStream, "ifeq ($(USE_CRUNTIME),TRUE)"
+	Print #MakefileStream, "else"
+	Print #MakefileStream, "FBCFLAGS+=-d MAKE_BAREBONE"
+	Print #MakefileStream, "endif"
 	Print #MakefileStream, "endif"
 
 	Print #MakefileStream, "FBCFLAGS+=-w error -maxerr 1"
