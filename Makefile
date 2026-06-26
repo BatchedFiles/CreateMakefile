@@ -105,8 +105,8 @@ CFLAGS+=-m32
 endif
 CFLAGS+=-march=$(MARCH)
 CFLAGS+=-pipe -masm=intel
-CFLAGS+=-Wall -Wextra -Wshadow -Wpointer-arith -Wcast-qual
-CFLAGS+=-pedantic
+CFLAGS+=-Wall -Wextra -pedantic
+CFLAGS+=-Wshadow -Wpointer-arith -Wcast-qual
 CFLAGS+=-Wno-builtin-declaration-mismatch
 CFLAGS_DEBUG+=-g -O0
 release: CFLAGS+=$(CFLAGS_RELEASE)
@@ -303,4 +303,3 @@ $(OBJ_RELEASE_DIR)$(PATH_SEP)%$(FILE_SUFFIX).c: src$(PATH_SEP)%.bas
 
 $(OBJ_DEBUG_DIR)$(PATH_SEP)%$(FILE_SUFFIX).c: src$(PATH_SEP)%.bas
 	$(FBC) $(FBCFLAGS) $< -o $(OBJ_DEBUG_DIR)$(PATH_SEP)$*$(FILE_SUFFIX).c
-
