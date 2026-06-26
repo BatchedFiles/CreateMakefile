@@ -82,6 +82,10 @@ FBCFLAGS+=-m WinMain
 ifeq ($(USE_RUNTIME),TRUE)
 else
 FBCFLAGS+=-d WITHOUT_RUNTIME
+ifeq ($(USE_CRUNTIME),TRUE)
+else
+FBCFLAGS+=-d MAKE_BAREBONE
+endif
 endif
 FBCFLAGS+=-w error -maxerr 1
 ifneq ($(INC_DIR),)
@@ -103,10 +107,6 @@ CFLAGS+=-march=$(MARCH)
 CFLAGS+=-pipe -masm=intel
 CFLAGS+=-Wall -Wextra -Wshadow -Wpointer-arith -Wcast-qual
 CFLAGS+=-pedantic
-CFLAGS+=-Wno-unused-label -Wno-unused-function
-CFLAGS+=-Wno-dollar-in-identifier-extension
-CFLAGS+=-Wno-language-extension-token
-CFLAGS+=-Wno-parentheses-equality
 CFLAGS+=-Wno-builtin-declaration-mismatch
 CFLAGS_DEBUG+=-g -O0
 release: CFLAGS+=$(CFLAGS_RELEASE)
@@ -189,7 +189,14 @@ endif
 debug: LDFLAGS+=$(LDFLAGS_DEBUG)
 debug: LDLIBS+=$(LIBS_DEBUG)
 
+ifeq ($(USE_RUNTIME),TRUE)
 LDLIBSBEGIN+=$(OBJ_CRT_START)
+LDLIBSBEGIN+=$(OBJ_FB_START)
+else
+ifeq ($(USE_CRUNTIME),TRUE)
+LDLIBSBEGIN+=$(OBJ_CRT_START)
+endif
+endif
 ifeq ($(USE_LD_LINKER),TRUE)
 LDLIBS+=--start-group
 else
@@ -201,7 +208,9 @@ LDLIBS+=--end-group
 else
 LDLIBS+=-Wl,--end-group
 endif
+ifeq ($(USE_CRUNTIME),TRUE)
 LDLIBSEND+=$(OBJ_CRT_END)
+endif
 
 OBJECTFILES_DEBUG+=$(OBJ_DEBUG_DIR)$(PATH_SEP)GenerateDialog$(FILE_SUFFIX).o
 OBJECTFILES_RELEASE+=$(OBJ_RELEASE_DIR)$(PATH_SEP)GenerateDialog$(FILE_SUFFIX).o
@@ -235,13 +244,13 @@ DEPENDENCIES_5=src$(PATH_SEP)WinMain.bas src$(PATH_SEP)GenerateDialog.bi src$(PA
 $(OBJ_DEBUG_DIR)$(PATH_SEP)WinMain$(FILE_SUFFIX).c: $(DEPENDENCIES_5)
 $(OBJ_RELEASE_DIR)$(PATH_SEP)WinMain$(FILE_SUFFIX).c: $(DEPENDENCIES_5)
 
-OBJECTFILES_DEBUG+=$(OBJ_DEBUG_DIR)$(PATH_SEP)resources.rc
-OBJECTFILES_RELEASE+=$(OBJ_RELEASE_DIR)$(PATH_SEP)resources.rc
+OBJECTFILES_DEBUG+=$(OBJ_DEBUG_DIR)$(PATH_SEP)resources$(FILE_SUFFIX).obj
+OBJECTFILES_RELEASE+=$(OBJ_RELEASE_DIR)$(PATH_SEP)resources$(FILE_SUFFIX).obj
 
 DEPENDENCIES_6=src$(PATH_SEP)resources.rc src$(PATH_SEP)resources.rh src$(PATH_SEP)manifest.xml
 
-$(OBJ_DEBUG_DIR)$(PATH_SEP)resources.rc: $(DEPENDENCIES_6)
-$(OBJ_RELEASE_DIR)$(PATH_SEP)resources.rc: $(DEPENDENCIES_6)
+$(OBJ_DEBUG_DIR)$(PATH_SEP)resources$(FILE_SUFFIX).obj: $(DEPENDENCIES_6)
+$(OBJ_RELEASE_DIR)$(PATH_SEP)resources$(FILE_SUFFIX).obj: $(DEPENDENCIES_6)
 
 release: $(BIN_RELEASE_DIR)$(PATH_SEP)$(OUTPUT_FILE_NAME)
 
@@ -294,3 +303,4 @@ $(OBJ_RELEASE_DIR)$(PATH_SEP)%$(FILE_SUFFIX).c: src$(PATH_SEP)%.bas
 
 $(OBJ_DEBUG_DIR)$(PATH_SEP)%$(FILE_SUFFIX).c: src$(PATH_SEP)%.bas
 	$(FBC) $(FBCFLAGS) $< -o $(OBJ_DEBUG_DIR)$(PATH_SEP)$*$(FILE_SUFFIX).c
+
