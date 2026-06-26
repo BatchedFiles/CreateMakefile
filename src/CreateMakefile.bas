@@ -1095,15 +1095,11 @@ Private Sub WriteGccFlags( _
 		Print #MakefileStream, "CFLAGS+=-pipe -masm=" & sAsm
 	End Scope
 
-	Print #MakefileStream, "CFLAGS+=-Wall -Wextra -Wshadow -Wpointer-arith -Wcast-qual"
 	If p->Pedantic Then
-		Print #MakefileStream, "CFLAGS+=-pedantic"
+		Print #MakefileStream, "CFLAGS+=-Wall -Wextra -pedantic"
+		Print #MakefileStream, "CFLAGS+=-Wshadow -Wpointer-arith -Wcast-qual"
 	End If
 
-	Print #MakefileStream, "CFLAGS+=-Wno-unused-label -Wno-unused-function"
-	Print #MakefileStream, "CFLAGS+=-Wno-dollar-in-identifier-extension"
-	Print #MakefileStream, "CFLAGS+=-Wno-language-extension-token"
-	Print #MakefileStream, "CFLAGS+=-Wno-parentheses-equality"
 	Print #MakefileStream, "CFLAGS+=-Wno-builtin-declaration-mismatch"
 
 	Print #MakefileStream, "CFLAGS_DEBUG+=-g -O0"
