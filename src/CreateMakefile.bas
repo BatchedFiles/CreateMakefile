@@ -729,45 +729,39 @@ Private Function WriteSetenvWin32( _
 			Dim StartLibraryes As String
 			Dim EndLibraryes As String
 
-			For i As Integer = LBound(ObjCrtStartExe) To UBound(ObjCrtStartExe) - 1
+			For i As Integer = LBound(ObjCrtStartExe) To UBound(ObjCrtStartExe)
 				If ObjCrtStartExe(i).Used Then
 					StartLibraryes = StartLibraryes & ObjCrtStartExe(i).LibName & " "
 				End If
 			Next
-			StartLibraryes = StartLibraryes & ObjCrtStartExe(UBound(ObjCrtStartExe)).LibName
 
-			' TODO Ложное предупреждение о границе массива
-			' For i As Integer = LBound(ObjCrtEndExe) To UBound(ObjCrtEndExe) - 1
-			' 	If ObjCrtEndExe(i).Used Then
-			' 		EndLibraryes = EndLibraryes & ObjCrtEndExe(i).LibName & " "
-			' 	End If
-			' Next
-			EndLibraryes = EndLibraryes & ObjCrtEndExe(UBound(ObjCrtEndExe)).LibName
+			For i As Integer = LBound(ObjCrtEndExe) To UBound(ObjCrtEndExe)
+				If ObjCrtEndExe(i).Used Then
+					EndLibraryes = EndLibraryes & ObjCrtEndExe(i).LibName & " "
+				End If
+			Next
 
-			Print #oStream, "set OBJ_CRT_START=" & StartLibraryes
-			Print #oStream, "set OBJ_CRT_END=" & EndLibraryes
+			Print #oStream, "set OBJ_CRT_START=" & RTrim(StartLibraryes)
+			Print #oStream, "set OBJ_CRT_END=" & RTrim(EndLibraryes)
 
 		Case OUTPUT_FILETYPE_DLL
 			Dim StartLibraryes As String
 			Dim EndLibraryes As String
 
-			For i As Integer = LBound(ObjCrtStartDll) To UBound(ObjCrtStartDll) - 1
+			For i As Integer = LBound(ObjCrtStartDll) To UBound(ObjCrtStartDll)
 				If ObjCrtStartDll(i).Used Then
 					StartLibraryes = StartLibraryes & ObjCrtStartDll(i).LibName & " "
 				End If
 			Next
-			StartLibraryes = StartLibraryes & ObjCrtStartDll(UBound(ObjCrtStartDll)).LibName
 
-			' TODO Ложное предупреждение о границе массива
-			' For i As Integer = LBound(ObjCrtEndDll) To UBound(ObjCrtEndDll) - 1
-			' 	If ObjCrtEndDll(i).Used Then
-			' 		EndLibraryes = EndLibraryes & ObjCrtEndDll(i).LibName & " "
-			' 	End If
-			' Next
-			EndLibraryes = EndLibraryes & ObjCrtEndDll(UBound(ObjCrtEndDll)).LibName
+			For i As Integer = LBound(ObjCrtEndDll) To UBound(ObjCrtEndDll)
+				If ObjCrtEndDll(i).Used Then
+					EndLibraryes = EndLibraryes & ObjCrtEndDll(i).LibName & " "
+				End If
+			Next
 
-			Print #oStream, "set OBJ_CRT_START=" & StartLibraryes
-			Print #oStream, "set OBJ_CRT_END=" & EndLibraryes
+			Print #oStream, "set OBJ_CRT_START=" & RTrim(StartLibraryes)
+			Print #oStream, "set OBJ_CRT_END=" & RTrim(EndLibraryes)
 
 	End Select
 
