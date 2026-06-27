@@ -1,4 +1,5 @@
 #include once "GenerateDialog.bi"
+#include once "win\strsafe.bi"
 #include once "resources.rh"
 
 #ifdef UNICODE
@@ -130,40 +131,57 @@ End Sub
 
 Private Sub CreateCommandLine( _
 		ByVal bufCommandLine As WZString Ptr, _
-		ByVal ProcessName As WZString Ptr _
+		ByVal ProcessName As WZString Ptr, _
+		ByVal FbcPath As WZString Ptr, _
+		ByVal FbcName As WZString Ptr, _
+		ByVal SourceFolder As WZString Ptr, _
+		ByVal MainModuleName As WZString Ptr, _
+		ByVal OutProgramName As WZString Ptr _
 	)
 
-	lstrcpy(bufCommandLine, ProcessName)
+	Const FormatString = __TEXT( """%s"" " & _
+		"-fbc-path ""%s"" " & _
+		"-fbc ""%s"" " & _
+		"-src ""%s"" " & _
+		"-module ""%s"" " & _
+		"-out ""%s"" " _
+	)
+		' -unicode true ^
+		' -winver 1281 ^
 
-	' "args": [
-	' 	"-makefile", "Makefile",
-	' 	"-src", "src",
-	' 	"-fbc-path", "C:\\Program Files (x86)\\FreeBASIC-1.10.1-winlibs-gcc-9.3.0",
-	' 	/* "-i", "C:\\Program Files (x86)\\FreeBASIC-1.10.1-winlibs-gcc-9.3.0\\inc", */
-	' 	"-fbc", "fbc64.exe",
-	' 	"-out", "cmf-gui",
-	' 	/* Main module filename */
-	' 	"-module", "WinMain",
-	' 	"-exetype", "exe",
-	' 	/* console, windows, native */
-	' 	"-subsystem", "windows",
-	' 	"-emitter", "gcc",
-	' 	"-fix", "false",
-	' 	"-unicode", "true",
-	' 	"-wrt", "true",
-	' 	"-addressaware", "true",
-	' 	"-multithreading", "false",
-	' 	"-usefilesuffix", "false",
-	' 	"-pedantic", "true",
-	' 	"-create-environment-file", "false",
-	' 	"-winver", "1280",
-	' 	"-createdirs", "false",
-	' 	"-asm", "intel",
-	' 	/* "-tmpdir", "D:\\Temp", */
-	' 	"-useldlinker", "true",
-	' 	"-flto", "false",
-	' 	"-target-triplet", "x86_64-w64-mingw32",
-	' ],
+		' -exetype exe ^
+		' -subsystem console ^
+
+		' -multithreading false ^
+
+		' -usefilesuffix true ^
+		' -tmpdir D:\Temp ^
+
+		' -pedantic false ^
+		' -fix false ^
+		' -emitter gcc ^
+		' -asm intel ^
+
+		' -addressaware true ^
+		' -useldlinker true ^
+		' -flto false ^
+		' -target-triplet x86_64-w64-mingw32
+		' -wrt false ^
+		' -wcrt false ^
+
+		' -createdirs false ^
+		' -makefile Makefile ^
+		' -create-environment-file true ^
+	wsprintf( _
+		bufCommandLine, _
+		@FormatString, _
+		ProcessName, _
+		FbcPath, _
+		FbcName, _
+		SourceFolder, _
+		MainModuleName, _
+		OutProgramName _
+	)
 
 End Sub
 
@@ -185,6 +203,28 @@ Private Sub GenerateDialog_OnLoad( _
 		Exit Sub
 	End If
 
+	Dim CommandLine As WZString Ptr = Allocate(SizeOf(WZString) * 1024)
+	If CommandLine = NULL Then
+		MessageBox( _
+			hWin, _
+			__TEXT("Can not allocate memory"), _
+			__TEXT("Error!"), _
+			MB_ICONERROR _
+		)
+
+		Exit Sub
+	End If
+
+	CreateCommandLine( _
+		CommandLine, _
+		self->GeneratorProcessName, _
+		self->CompilerPath, _
+		self->FbcCompilerName, _
+		self->SourceFolder, _
+		self->MainModuleName, _
+		self->OutputFileName _
+	)
+
 	Dim siStartInfo As STARTUPINFO = Any
 	ZeroMemory(@siStartInfo, SizeOf(STARTUPINFO))
 
@@ -198,15 +238,9 @@ Private Sub GenerateDialog_OnLoad( _
 
 	Dim piProcInfo As PROCESS_INFORMATION = Any
 
-	Dim CommandLine As WZString * (MAX_PATH + 1) = Any
-	CreateCommandLine( _
-		@CommandLine, _
-		self->GeneratorProcessName _
-	)
-
 	Dim resCreate As BOOL = CreateProcess( _
 		self->GeneratorProcessName, _
-		@CommandLine, _
+		CommandLine, _
 		NULL, _
 		NULL, _
 		True, _
@@ -216,6 +250,8 @@ Private Sub GenerateDialog_OnLoad( _
 		@siStartInfo, _
 		@piProcInfo _
 	)
+
+	Deallocate(CommandLine)
 
 	If resCreate = 0 Then
 		Dim dwError As DWORD = GetLastError()

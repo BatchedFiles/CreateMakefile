@@ -51,9 +51,7 @@ End Type
 Private Function OpenFileShowDialog( _
 		ByVal hInst As HINSTANCE, _
 		ByVal hOwner As HWND, _
-		ByVal pbuf As TCHAR Ptr, _
-		ByVal pFileOffset As Integer Ptr, _
-		ByVal pFileExtension As Integer Ptr _
+		ByVal pbuf As TCHAR Ptr _
 	) As Boolean
 
 	Dim FileFilter As WZString * (STRING_BUFFER_CAPACITY + 1) = Any
@@ -102,9 +100,6 @@ Private Function OpenFileShowDialog( _
 			Return False
 		End If
 	End If
-
-	*pFileOffset = CInt(fn.nFileOffset)
-	*pFileExtension = CInt(fn.nFileExtension)
 
 	If pbuf[0] = 0 Then
 		Return False
@@ -182,14 +177,10 @@ Private Sub SelectGeneratorPath_OnClick( _
 	)
 
 	Dim buf As WZString * (STRING_BUFFER_CAPACITY + 1) = Any
-	Dim nFileOffset As Integer = Any
-	Dim nFileExtension As Integer = Any
 	Dim resOpen As Boolean = OpenFileShowDialog( _
 		self->hInst, _
 		hWin, _
-		@buf, _
-		@nFileOffset, _
-		@nFileExtension _
+		@buf _
 	)
 
 	If resOpen = False Then
@@ -209,62 +200,23 @@ Private Sub SelectCompilerPath_OnClick( _
 		ByVal hWin As HWND _
 	)
 
-	Dim buf As WZString * (STRING_BUFFER_CAPACITY + 1) = Any
+	Dim buf As WZString * (MAX_PATH + 1) = Any
 	Dim nFileOffset As Integer = Any
-	Dim nFileExtension As Integer = Any
 	Dim resOpen As Boolean = OpenFileShowDialog( _
 		self->hInst, _
 		hWin, _
-		@buf, _
-		@nFileOffset, _
-		@nFileExtension _
+		@buf _
 	)
 
 	If resOpen = False Then
 		Exit Sub
 	End If
 
-	' If nFileOffset Then
-	' 	Dim IndexPrev As Integer = nFileOffset - 1
-	' 	Dim OldValue As Integer = buf[IndexPrev]
-	' 	buf[IndexPrev] = Asc("/")
-
-	' 	SetDlgItemText( _
-	' 		hWin, _
-	' 		IDC_EDT_RESOURCE, _
-	' 		@buf[IndexPrev] _
-	' 	)
-
-	' 	buf[IndexPrev] = OldValue
-	' End If
-
 	SetDlgItemText( _
 		hWin, _
 		IDC_TXT_COMPILER, _
 		@buf _
 	)
-
-	' this->IsTemporaryFile = FileType.DiskFile
-
-	' If nFileExtension Then
-	' 	Dim ExtensionWithDotOffset As Integer = nFileExtension - 1
-	' 	Dim pExt As TCHAR Ptr = @buf.szText(ExtensionWithDotOffset)
-
-	' 	Dim bufContentType As FileNameBuffer = Any
-	' 	Dim hrContentType As HRESULT = GetContentTypeOfFileExtension( _
-	' 		@bufContentType.szText(0), _
-	' 		pExt, _
-	' 		MAX_PATH _
-	' 	)
-
-	' 	If SUCCEEDED(hrContentType) Then
-	' 		SetDlgItemText( _
-	' 			hWin, _
-	' 			IDC_EDT_TYPE, _
-	' 			@bufContentType.szText(0) _
-	' 		)
-	' 	End If
-	' End If
 
 End Sub
 
@@ -282,7 +234,7 @@ Private Sub CreateMakefile_OnClick( _
 	)
 
 	Dim CompilerProcessName As WZString * (MAX_PATH + 1) = Any
-	GetDlgItemText( _
+	Dim CompilerNameLength As Long = GetDlgItemText( _
 		hWin, _
 		IDC_TXT_COMPILER, _
 		@CompilerProcessName, _
@@ -305,11 +257,11 @@ Private Sub CreateMakefile_OnClick( _
 		MAX_PATH _
 	)
 
-	Dim OutputFilename As WZString * (MAX_PATH + 1) = Any
+	Dim OutputFileName As WZString * (MAX_PATH + 1) = Any
 	GetDlgItemText( _
 		hWin, _
 		IDC_TXT_EXENAME, _
-		@OutputFilename, _
+		@OutputFileName, _
 		MAX_PATH _
 	)
 
@@ -323,15 +275,27 @@ Private Sub CreateMakefile_OnClick( _
 
 	Dim param As GenerateParameter = Any
 	param.hInst = self->hInst
+
+	Dim pFbcName As WZString Ptr = 0
+	For i As Integer = CompilerNameLength - 1 To 0 Step -1
+		If CompilerProcessName[i] = Asc("\") Then
+			CompilerProcessName[i] = 0
+			pFbcName = @CompilerProcessName[i + 1]
+
+			Exit For
+		End If
+	Next
+
 	param.GeneratorProcessName = @GeneratorProcessName
 	param.CurrentDirectory = @ProjectPath
-	' MakefileFileName As TCHAR Ptr
 	param.SourceFolder = @SourcePath
 	param.CompilerPath = @CompilerProcessName
-	' IncludePath As TCHAR Ptr
-	' FbcCompilerName As TCHAR Ptr
-	param.OutputFileName = @OutputFilename
+	param.FbcCompilerName = pFbcName
+	param.OutputFileName = @OutputFileName
 	param.MainModuleName = @MainModuleName
+	' MakefileFileName As TCHAR Ptr
+	' IncludePath As TCHAR Ptr
+
 	' ExeType As ExecutableType
 	' FileSubsystem As Subsystem
 	' Emitter As CodeEmitter
