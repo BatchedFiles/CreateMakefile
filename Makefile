@@ -107,7 +107,7 @@ CFLAGS+=-march=$(MARCH)
 CFLAGS+=-pipe -masm=intel
 CFLAGS+=-Wall -Wextra -pedantic
 CFLAGS+=-Wshadow -Wpointer-arith -Wcast-qual
-CFLAGS+=-Wno-builtin-declaration-mismatch
+CFLAGS+=-Wno-builtin-declaration-mismatch -Wno-unused
 CFLAGS_DEBUG+=-g -O0
 release: CFLAGS+=$(CFLAGS_RELEASE)
 release: CFLAGS+=-fno-math-errno -fno-exceptions

@@ -1100,7 +1100,7 @@ Private Sub WriteGccFlags( _
 		Print #MakefileStream, "CFLAGS+=-Wshadow -Wpointer-arith -Wcast-qual"
 	End If
 
-	Print #MakefileStream, "CFLAGS+=-Wno-builtin-declaration-mismatch"
+	Print #MakefileStream, "CFLAGS+=-Wno-builtin-declaration-mismatch -Wno-unused"
 
 	Print #MakefileStream, "CFLAGS_DEBUG+=-g -O0"
 
