@@ -1,5 +1,6 @@
 #include once "GenerateDialog.bi"
-#include once "win\strsafe.bi"
+#include once "win\commctrl.bi"
+#include once "win\windowsx.bi"
 #include once "resources.rh"
 
 #ifdef UNICODE
@@ -24,11 +25,22 @@ _itoa ((Value), (buf), 10)
 #ENDMACRO
 #endif
 
+#define WM_USER_APPENDTEXT WM_USER + 1
+
 Type Pipes
 	hStdInRead As Handle
 	hStdInWrite As Handle    ' parent writing
 	hStdOutRead As Handle    ' parent reading
 	hStdOutWrite As Handle
+End Type
+
+Type ChildProcessParam
+	hWin As HWND
+	hStdInWrite As HANDLE
+	hStdOutWrite As HANDLE
+	hStdOutRead As HANDLE
+	hStdInRead As HANDLE
+	hProcess As HANDLE
 End Type
 
 Private Function SetPipes( _
@@ -96,7 +108,8 @@ Private Sub ReadChild( _
 	)
 
 	Do
-		Dim Buffer As ZString * (2048) = Any
+		Dim Buffer As ZString * 2048 = Any
+
 		Dim ReadBytesCount As DWORD = Any
 		Dim resRead As BOOL = ReadFile( _
 			hFile, _
@@ -106,7 +119,6 @@ Private Sub ReadChild( _
 			NULL _
 		)
 		If resRead = 0 Then
-			' Dim dwError As DWORD = GetLastError()
 			Exit Do
 		End If
 
@@ -116,7 +128,29 @@ Private Sub ReadChild( _
 
 		Buffer[ReadBytesCount] = 0
 
-		SetDlgItemTextA(hWin, IDC_TXT_PROGRESS, @Buffer)
+		Dim pBuffer As WZString Ptr = Allocate((ReadBytesCount + 1) * SizeOf(WZString))
+
+		If pBuffer = 0 Then
+			Continue Do
+		End If
+
+		#ifdef UNICODE
+			MultiByteToWideChar( _
+				CP_OEMCP, 0, _
+				@Buffer, _
+				-1, _
+				pBuffer, _
+				(ReadBytesCount + 1) _
+			)
+		#else
+			CopyMemory(@Buffer, pBuffer, ReadBytesCount + 1)
+		#endif
+
+		PostMessage( _
+			hWin, _
+			WM_USER_APPENDTEXT, _
+			0, Cast(LPARAM, pBuffer) _
+		)
 
 	Loop
 
@@ -184,6 +218,41 @@ Private Sub CreateCommandLine( _
 	)
 
 End Sub
+
+Private Function ReadChildProcess( _
+		ByVal lpParameter As Any Ptr _
+	) As DWORD
+
+	Dim pParam As ChildProcessParam Ptr = lpParameter
+
+	' Write Any data to Child Process
+	WriteChild(pParam->hWin, pParam->hStdInWrite)
+	CloseHandle(pParam->hStdInWrite)
+	CloseHandle(pParam->hStdOutWrite)
+
+	ReadChild(pParam->hWin, pParam->hStdOutRead)
+	CloseHandle(pParam->hStdInRead)
+	CloseHandle(pParam->hStdOutRead)
+
+	Dim ExitCode As DWORD = Any
+	GetExitCodeProcess( _
+		pParam->hProcess, _
+		@ExitCode _
+	)
+
+	Dim nCode As Long = CLng(ExitCode)
+	Dim buf As WZString * (128) = Any
+	LongToString(@buf, nCode)
+
+	MessageBox(NULL, @buf, __TEXT("Process Exit Code"), MB_ICONINFORMATION)
+
+	CloseHandle(pParam->hProcess)
+
+	Deallocate(pParam)
+
+	Return 0
+
+End Function
 
 Private Sub GenerateDialog_OnLoad( _
 		ByVal self As GenerateParameter Ptr, _
@@ -270,29 +339,66 @@ Private Sub GenerateDialog_OnLoad( _
 
 	CloseHandle(piProcInfo.hThread)
 
-	' Write Any data to Child Process
-	WriteChild(hWin, tPipes.hStdInWrite)
-	CloseHandle(tPipes.hStdInWrite)
-	CloseHandle(tPipes.hStdOutWrite)
+	Dim lpParameter As ChildProcessParam Ptr = Allocate(SizeOf(ChildProcessParam))
+	If lpParameter = NULL Then
+		Exit Sub
+	End If
 
-	ReadChild(hWin, tPipes.hStdOutRead)
-	CloseHandle(tPipes.hStdInRead)
-	CloseHandle(tPipes.hStdOutRead)
+	lpParameter->hWin = hWin
+	lpParameter->hStdInWrite = tPipes.hStdInWrite
+	lpParameter->hStdOutWrite = tPipes.hStdOutWrite
+	lpParameter->hStdOutRead = tPipes.hStdOutRead
+	lpParameter->hStdInRead = tPipes.hStdInRead
+	lpParameter->hProcess = piProcInfo.hProcess
 
-	Dim ExitCode As DWORD = Any
-	GetExitCodeProcess( _
-		piProcInfo.hProcess, _
-		@ExitCode _
+	CreateThread( _
+		NULL, _
+		0, _
+		@ReadChildProcess, _
+		lpParameter, _
+		0, _
+		NULL _
 	)
 
-	Dim nCode As Long = CLng(ExitCode)
-	Dim buf As WZString * (128) = Any
-	LongToString(@buf, nCode)
+End Sub
 
-	MessageBox(hWin, @buf, __TEXT("Process Exit Code"), MB_ICONINFORMATION)
+Private Sub AppendText( _
+		ByVal hWin As HWND, _
+		ByVal nControl As UINT, _
+		ByVal lptszText As LPTSTR _
+	)
 
-	CloseHandle(piProcInfo.hProcess)
+	Dim OldTextLength As Long = SendDlgItemMessage( _
+		hWin, nControl, WM_GETTEXTLENGTH, _
+		0, 0 _
+	)
 
+	SendDlgItemMessage( _
+		hWin, nControl, EM_SETSEL, _
+		OldTextLength, OldTextLength _
+	)
+	SendDlgItemMessage( _
+		hWin, nControl, EM_REPLACESEL, _
+		0, Cast(LPARAM, lptszText) _
+	)
+	SendDlgItemMessage( _
+		hWin, nControl, EM_SCROLLCARET, _
+		0, 0 _
+	)
+
+End Sub
+
+Private Sub txtProgress_AppendText( _
+		ByVal self As GenerateParameter Ptr, _
+		ByVal hWin As HWND, _
+		ByVal lpText As LPTSTR _
+	)
+
+	AppendText(hWin, IDC_TXT_PROGRESS, lpText)
+
+	Deallocate(lpText)
+
+	' SetDlgItemTextA(hWin, IDC_TXT_PROGRESS, @Buffer)
 End Sub
 
 Function GenerateDialogProc( _
@@ -344,8 +450,11 @@ Function GenerateDialogProc( _
 
 			End Select
 
-		Case WM_DESTROY
-			' MainDialog_OnUnload(self, hWin)
+		Case WM_USER_APPENDTEXT
+			txtProgress_AppendText(self, hWin, Cast(LPTSTR, lParam))
+
+		' Case WM_DESTROY
+		' 	GenerateDialog_OnUnload(self, hWin)
 
 		Case Else
 			Return False
