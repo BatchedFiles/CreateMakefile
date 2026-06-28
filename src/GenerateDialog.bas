@@ -27,10 +27,10 @@ _itoa ((Value), (buf), 10)
 #define WM_USER_PROCESS_DONE (WM_USER + 2)
 
 Type Pipes
-	hStdInRead As Handle
-	hStdInWrite As Handle    ' parent writing
-	hStdOutRead As Handle    ' parent reading
-	hStdOutWrite As Handle
+	hStdInRead As HANDLE
+	hStdInWrite As HANDLE    ' parent writing
+	hStdOutRead As HANDLE    ' parent reading
+	hStdOutWrite As HANDLE
 End Type
 
 Type ChildProcessParam
