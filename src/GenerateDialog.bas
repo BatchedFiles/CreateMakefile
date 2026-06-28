@@ -23,7 +23,8 @@ _itoa ((Value), (buf), 10)
 #ENDMACRO
 #endif
 
-#define WM_USER_APPENDTEXT WM_USER + 1
+#define WM_USER_APPENDTEXT (WM_USER + 1)
+#define WM_USER_PROCESS_DONE (WM_USER + 2)
 
 Type Pipes
 	hStdInRead As Handle
@@ -290,11 +291,11 @@ Private Function ReadChildProcess( _
 		@ExitCode _
 	)
 
-	Dim nCode As Long = CLng(ExitCode)
-	Dim buf As WZString * (128) = Any
-	LongToString(@buf, nCode)
-
-	MessageBox(NULL, @buf, __TEXT("Process Exit Code"), MB_ICONINFORMATION)
+	PostMessage( _
+		pParam->hWin, _
+		WM_USER_PROCESS_DONE, _
+		0, Cast(LPARAM, ExitCode) _
+	)
 
 	CloseHandle(pParam->hProcess)
 
@@ -453,6 +454,24 @@ Private Sub txtProgress_AppendText( _
 
 End Sub
 
+Private Sub GenerateDialog_Done( _
+		ByVal self As GenerateParameter Ptr, _
+		ByVal hWin As HWND, _
+		ByVal ExitCode As DWORD _
+	)
+
+	Dim buf As WZString * (128) = Any
+	LongToString(@buf, ExitCode)
+
+	MessageBox( _
+		hWin, _
+		@buf, _
+		__TEXT("Process Exit Code"), _
+		MB_ICONINFORMATION _
+	)
+
+End Sub
+
 Function GenerateDialogProc( _
 		ByVal hWin As HWND, _
 		ByVal uMsg As UINT, _
@@ -504,6 +523,9 @@ Function GenerateDialogProc( _
 
 		Case WM_USER_APPENDTEXT
 			txtProgress_AppendText(self, hWin, Cast(LPTSTR, lParam))
+
+		Case WM_USER_PROCESS_DONE
+			GenerateDialog_Done(self, hWin, Cast(DWORD, lParam))
 
 		' Case WM_DESTROY
 		' 	GenerateDialog_OnUnload(self, hWin)
