@@ -427,7 +427,7 @@ Private Sub AppendText( _
 		ByVal lptszText As LPTSTR _
 	)
 
-	Dim OldTextLength As Long = SendDlgItemMessage( _
+	Dim OldTextLength As Integer = SendDlgItemMessage( _
 		hWin, nControl, WM_GETTEXTLENGTH, _
 		0, 0 _
 	)
