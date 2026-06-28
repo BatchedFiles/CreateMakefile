@@ -1,6 +1,4 @@
 #include once "GenerateDialog.bi"
-#include once "win\commctrl.bi"
-#include once "win\windowsx.bi"
 #include once "resources.rh"
 
 #ifdef UNICODE
@@ -170,42 +168,91 @@ Private Sub CreateCommandLine( _
 		ByVal FbcName As WZString Ptr, _
 		ByVal SourceFolder As WZString Ptr, _
 		ByVal MainModuleName As WZString Ptr, _
-		ByVal OutProgramName As WZString Ptr _
+		ByVal OutProgramName As WZString Ptr, _
+		ByVal ExeType As Integer, _
+		ByVal FileSubsystem As Integer, _
+		ByVal UnicodeFlag As Integer _
 	)
+
+	Const TrueString = __TEXT("true")
+	Const FalseString = __TEXT("false")
+
+	Const ConsoleString = __TEXT("console")
+	Const WindowsString = __TEXT("windows")
+	Const NativeString = __TEXT("native")
+
+	Const ExeString = __TEXT("exe")
+	Const DllString = __TEXT("dll")
+	Const LibString = __TEXT("lib")
+	Const WasmString = __TEXT("wasm")
 
 	Const FormatString = __TEXT( """%s"" " & _
 		"-fbc-path ""%s"" " & _
 		"-fbc ""%s"" " & _
 		"-src ""%s"" " & _
 		"-module ""%s"" " & _
-		"-out ""%s"" " _
+		"-out ""%s"" " & _
+		"-unicode ""%s"" " & _
+		"-winver 1281 " & _
+		"-exetype ""%s"" " & _
+		"-subsystem ""%s"" " _
 	)
-		' -unicode true ^
-		' -winver 1281 ^
 
-		' -exetype exe ^
-		' -subsystem console ^
+	Dim pUnicodeFlag As WZString Ptr = Any
+	If UnicodeFlag Then
+		pUnicodeFlag = @TrueString
+	Else
+		pUnicodeFlag = @FalseString
+	End If
 
-		' -multithreading false ^
+	Dim pExeType As WZString Ptr = Any
+	Select Case ExeType
+		Case 0
+			pExeType = @ExeString
+		Case 1
+			pExeType = @DllString
+		Case 2
+			pExeType = @LibString
+		Case Else
+			pExeType = @WasmString
+	End Select
 
-		' -usefilesuffix true ^
-		' -tmpdir D:\Temp ^
+	Dim pSubSystem As WZString Ptr = Any
+	Select Case FileSubsystem
+		Case 0
+			pSubSystem = @ConsoleString
+		Case 1
+			pSubSystem = @WindowsString
+		Case Else
+			pSubSystem = @NativeString
+	End Select
 
-		' -pedantic false ^
-		' -fix false ^
-		' -emitter gcc ^
-		' -asm intel ^
+	' -unicode true ^
+	' -winver 1281 ^
 
-		' -addressaware true ^
-		' -useldlinker true ^
-		' -flto false ^
-		' -target-triplet x86_64-w64-mingw32
-		' -wrt false ^
-		' -wcrt false ^
+	' -exetype exe ^
+	' -subsystem console ^
 
-		' -createdirs false ^
-		' -makefile Makefile ^
-		' -create-environment-file true ^
+	' -multithreading false ^
+
+	' -pedantic false ^
+	' -fix false ^
+	' -emitter gcc ^
+	' -asm intel ^
+
+	' -addressaware true ^
+	' -useldlinker true ^
+	' -flto false ^
+	' -target-triplet x86_64-w64-mingw32
+	' -wrt false ^
+	' -wcrt false ^
+
+	' -usefilesuffix true ^
+	' -tmpdir D:\Temp ^
+	' -createdirs false ^
+	' -makefile Makefile ^
+	' -create-environment-file true ^
+
 	wsprintf( _
 		bufCommandLine, _
 		@FormatString, _
@@ -214,7 +261,10 @@ Private Sub CreateCommandLine( _
 		FbcName, _
 		SourceFolder, _
 		MainModuleName, _
-		OutProgramName _
+		OutProgramName, _
+		pUnicodeFlag, _
+		pExeType, _
+		pSubSystem _
 	)
 
 End Sub
@@ -291,7 +341,10 @@ Private Sub GenerateDialog_OnLoad( _
 		self->FbcCompilerName, _
 		self->SourceFolder, _
 		self->MainModuleName, _
-		self->OutputFileName _
+		self->OutputFileName, _
+		self->ExeType, _
+		self->FileSubsystem, _
+		self->UnicodeFlag _
 	)
 
 	Dim siStartInfo As STARTUPINFO = Any
@@ -398,7 +451,6 @@ Private Sub txtProgress_AppendText( _
 
 	Deallocate(lpText)
 
-	' SetDlgItemTextA(hWin, IDC_TXT_PROGRESS, @Buffer)
 End Sub
 
 Function GenerateDialogProc( _

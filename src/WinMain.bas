@@ -296,11 +296,24 @@ Private Sub CreateMakefile_OnClick( _
 	' MakefileFileName As TCHAR Ptr
 	' IncludePath As TCHAR Ptr
 
-	' ExeType As ExecutableType
-	' FileSubsystem As Subsystem
+	param.ExeType = SendDlgItemMessage( _
+		hWin, IDC_CBB_FILETYPE, CB_GETCURSEL, 0, 0 _
+	)
+
+	param.FileSubsystem = SendDlgItemMessage( _
+		hWin, IDC_CBB_SUBSYSTEM, CB_GETCURSEL, 0, 0 _
+	)
+
 	' Emitter As CodeEmitter
 	' FixEmittedCode As FixCode
-	' UnicodeFlag As UseUnicode
+	param.UnicodeFlag = SendDlgItemMessage( _
+		hWin, _
+		IDC_CHK_UNICODE, _
+		BM_GETCHECK, _
+		0, _
+		0 _
+	)
+
 	' UseFbRuntimeLibrary As UseFbRuntime
 	' UseCRuntimeLibrary As UseCRuntime
 	' AddressAware As ProcessAddressSpace
