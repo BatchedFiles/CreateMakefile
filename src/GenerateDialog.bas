@@ -310,6 +310,11 @@ Private Sub GenerateDialog_OnLoad( _
 		ByVal hWin As HWND _
 	)
 
+	SendDlgItemMessage( _
+		hWin, IDC_TXT_PROGRESS, EM_LIMITTEXT, _
+		2 * 1024 * 1024, 0 _
+	)
+
 	Dim tPipes As Pipes = Any
 	Dim resSetPipes As Boolean = SetPipes(@tPipes)
 	If resSetPipes = False Then
