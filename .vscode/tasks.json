@@ -21,6 +21,7 @@
 				"-fix", "false",
 				"-unicode", "true",
 				"-wrt", "true",
+				"-wcrt", "true",
 				"-addressaware", "true",
 				"-multithreading", "false",
 				"-usefilesuffix", "false",
@@ -29,7 +30,7 @@
 				"-winver", "1280",
 				"-createdirs", "false",
 				"-asm", "intel",
-				"-tmpdir", "D:\\Temp",
+				/* "-tmpdir", "D:\\Temp", */
 				"-useldlinker", "true",
 				"-flto", "false",
 				"-target-triplet", "x86_64-w64-mingw32",
