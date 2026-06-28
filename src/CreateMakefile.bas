@@ -2295,7 +2295,7 @@ Private Sub PrintAllParameters( _
 		Else
 			sUseLdLinker = "false"
 		End If
-		Print "Create bin obj directories", sUseLdLinker
+		Print "Use ld linker", sUseLdLinker
 	End Scope
 
 	Scope
@@ -2381,7 +2381,9 @@ Scope
 	Next
 
 	For i As Integer = LBound(FilesVector) To UBound(FilesVector)
-		Print FilesVector(i)
+		If Len(FilesVector(i)) Then
+			Print FilesVector(i)
+		End If
 	Next
 
 	Print "Done"
@@ -2389,6 +2391,7 @@ Scope
 	Print "Get Dependencies..."
 
 	ReDim DepsVector(LBound(FilesVector) To UBound(FilesVector)) As String
+
 	For i As Integer = LBound(DepsVector) To UBound(DepsVector)
 		Dim FullFileName As String = BuildPath( _
 			pParams->SourceFolder, _
