@@ -616,8 +616,7 @@ Private Function WriteSetenvWin32( _
 	Print #oStream, "set LD=""%FBC_DIR%\%BinFolder%\ld.exe"""
 	Print #oStream, "set DLL_TOOL=""%FBC_DIR%\%BinFolder%\dlltool.exe"""
 	Print #oStream, "rem Linker script only for GCC x86, GCC x64 and Clang x86"
-	Print #oStream, "rem Without quotes:"
-	Print #oStream, "set LD_SCRIPT=%LIB_DIR%\fbextra.x"
+	Print #oStream, "set LD_SCRIPT=""%LIB_DIR%\fbextra.x"""
 	Print #oStream,
 
 	Print #oStream, "rem Parameter separator for gnu make //"
@@ -848,7 +847,7 @@ Private Function WriteSetenvWin32( _
 
 End Function
 
-Private Sub WriteHeader( _
+Private Sub WriteMakefileHeader( _
 		ByVal MakefileStream As Long _
 	)
 
@@ -870,6 +869,7 @@ Private Sub WriteCompilerToolChain( _
 		ByVal MakefileStream As Long _
 	)
 
+	Print #MakefileStream, "# Toolchain:"
 	Print #MakefileStream, "FBC ?= fbc.exe"
 	Print #MakefileStream, "CC ?= gcc.exe"
 	Print #MakefileStream, "AS ?= as.exe"
@@ -880,14 +880,6 @@ Private Sub WriteCompilerToolChain( _
 	Print #MakefileStream, "LIB_DIR ?="
 	Print #MakefileStream, "INC_DIR ?="
 	Print #MakefileStream, "LD_SCRIPT ?="
-	Print #MakefileStream,
-
-End Sub
-
-Private Sub WriteProcessorArch( _
-		ByVal MakefileStream As Long _
-	)
-
 	Print #MakefileStream, "TARGET_TRIPLET ?="
 	Print #MakefileStream,
 
@@ -897,8 +889,6 @@ Private Sub WriteOutputFilename( _
 		ByVal MakefileStream As Long, _
 		ByVal p As Parameter Ptr _
 	)
-
-	Dim Extension As String = GetExtensionOutputFile(p)
 
 	Print #MakefileStream, "USE_RUNTIME ?= TRUE"
 	Print #MakefileStream, "USE_CRUNTIME ?= TRUE"
@@ -911,6 +901,8 @@ Private Sub WriteOutputFilename( _
 	Print #MakefileStream, "else"
 	Print #MakefileStream, "RUNTIME = _WRT"
 	Print #MakefileStream, "endif"
+
+	Dim Extension As String = GetExtensionOutputFile(p)
 
 	Select Case p->ExeType
 
@@ -1254,10 +1246,10 @@ Private Sub WriteLinkerFlags( _
 
 				Case OUTPUT_FILETYPE_DLL
 					Print #MakefileStream, "ifeq ($(USE_LD_LINKER),TRUE)"
-					Print #MakefileStream, "LDFLAGS+=--dll --enable-stdcall-fixup"
+					Print #MakefileStream, "LDFLAGS+=--dll --enable-stdcall-fixup -e DllMainCRTStartup"
 					Print #MakefileStream, "OUTPUT_DEF=--output-def"
 					Print #MakefileStream, "else"
-					Print #MakefileStream, "LDFLAGS+=-Wl,--dll -Wl,--enable-stdcall-fixup"
+					Print #MakefileStream, "LDFLAGS+=-Wl,--dll -Wl,--enable-stdcall-fixup -e DllMainCRTStartup"
 					Print #MakefileStream, "OUTPUT_DEF=-Wl,--output-def"
 					Print #MakefileStream, "endif"
 
@@ -1287,7 +1279,7 @@ Private Sub WriteLinkerFlags( _
 			Print #MakefileStream, "LDFLAGS+=-L ""$(LIB_DIR)"""
 
 			Print #MakefileStream, "ifneq ($(LD_SCRIPT),)"
-			Print #MakefileStream, "LDFLAGS+=-T ""$(LD_SCRIPT)"""
+			Print #MakefileStream, "LDFLAGS+=-T $(LD_SCRIPT)"
 			Print #MakefileStream, "endif"
 
 	End Select
@@ -2114,6 +2106,10 @@ Private Function ParseCommandLine( _
 		p->MainModuleName = p->OutputFileName
 	End If
 
+	If p->UseFbRuntimeLibrary Then
+		p->UseCRuntimeLibrary = True
+	End If
+
 	Return PARSE_SUCCESS
 
 End Function
@@ -2433,10 +2429,9 @@ Scope
 		End(3)
 	End If
 
-	WriteHeader(MakefileNumber)
+	WriteMakefileHeader(MakefileNumber)
 
 	WriteCompilerToolChain(MakefileNumber)
-	WriteProcessorArch(MakefileNumber)
 	WriteOutputFilename(MakefileNumber, pParams)
 	WriteUtilsPathWin32(MakefileNumber)
 	WriteArchSpecifiedPath(MakefileNumber)
