@@ -89,6 +89,7 @@ Type Parameter
 	PathSeparator As ZString * (MAX_PATH + 1)
 	MovePathSeparator As ZString * (MAX_PATH + 1)
 	TargetTriplet As ZString * (MAX_PATH + 1)
+	MingwFolder As ZString * (MAX_PATH + 1)
 	ExeType As ExecutableType
 	FileSubsystem As Subsystem
 	Emitter As CodeEmitter
@@ -583,10 +584,9 @@ Private Function WriteSetenvWin32( _
 	End If
 
 	Print #oStream, "@echo off"
-	Print #oStream, "rem Setting up environment parameters for Makefile"
+	Print #oStream, "rem Setting up environment variables for Makefile"
 	Print #oStream,
 
-	' PROCESSOR_ARCHITECTURE = AMD64 или x86
 	Print #oStream, "rem Get current arch and set BIN and LIB folder"
 	Print #oStream, "if %PROCESSOR_ARCHITECTURE% == AMD64 ("
 	Print #oStream, "set BinFolder=bin\win64"
@@ -834,6 +834,11 @@ Private Function WriteSetenvWin32( _
 		End If
 	End If
 	Print #oStream,
+
+	If Len(p->MingwFolder) Then
+		Print #oStream, "set MINGW_DIR=" & p->MingwFolder
+		Print #oStream, "set PATH=%MINGW_DIR%\bin;%PATH%"
+	End If
 
 	Print #oStream, "rem Create bin obj folders"
 	Print #oStream, "rem mingw32-make createdirs"
@@ -1879,6 +1884,7 @@ Private Function ParseCommandLine( _
 	p->PathSeparator = "/"
 	p->MovePathSeparator = "\\"
 	p->TargetTriplet = "x86_64-w64-mingw32"
+	p->MingwFolder = ""
 	p->ExeType = OUTPUT_FILETYPE_EXE
 	p->FileSubsystem = SUBSYSTEM_CONSOLE
 	p->Emitter = CODE_EMITTER_GCC
@@ -1926,6 +1932,9 @@ Private Function ParseCommandLine( _
 
 			Case "-tmpdir"
 				p->TempFolder = sValue
+
+			Case "-mingw-path"
+				p->MingwFolder = sValue
 
 			Case "-exetype"
 
@@ -2128,6 +2137,7 @@ Private Sub PrintAllParameters( _
 	Print "Main module name", p->MainModuleName
 	Print "Temporary directory", p->TempFolder
 	Print "Target triplet", p->TargetTriplet
+	Print "MinGW directory", p->MingwFolder
 
 	Scope
 		Dim sExeType As String
