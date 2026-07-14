@@ -35,6 +35,11 @@ Enum AssemblerFormat
 	ASSEMBLER_ATT
 End Enum
 
+Enum MakeUtilKind
+	MakeUtilMingw
+	MakeUtilGnuMake
+End Enum
+
 Enum ParseResult
 	PARSE_FAIL = -1
 	PARSE_SUCCESS = 0
@@ -96,6 +101,7 @@ Type Parameter
 	AddressAware As ProcessAddressSpace
 	MinimalOSVersion As Integer
 	AsmFormat As AssemblerFormat
+	MakeKind As MakeUtilKind
 	UseEnvironmentFile As Boolean
 	MultiThreading As Boolean
 	UseFbRuntimeLibrary As Boolean
@@ -697,11 +703,11 @@ Private Function WriteSetenvWin32( _
 	Print #oStream,
 
 	Print #oStream, "rem Add any flags to compiler"
-	Print #oStream, "rem set FBCFLAGS="
-	Print #oStream, "rem set CFLAGS="
-	Print #oStream, "rem set ASFLAGS="
-	Print #oStream, "rem set GORCFLAGS="
-	Print #oStream, "rem set LDFLAGS="
+	Print #oStream, "set FBCFLAGS="
+	Print #oStream, "set CFLAGS="
+	Print #oStream, "set ASFLAGS="
+	Print #oStream, "set GORCFLAGS="
+	Print #oStream, "set LDFLAGS="
 	Print #oStream,
 
 	Print #oStream, "rem Target triplet"
@@ -1891,6 +1897,7 @@ Private Function ParseCommandLine( _
 	p->AddressAware = LARGE_ADDRESS_UNAWARE
 	p->MinimalOSVersion = WINVER_DEFAULT
 	p->AsmFormat = ASSEMBLER_INTEL
+	p->MakeKind = MakeUtilMingw
 	p->UseEnvironmentFile = True
 	p->MultiThreading = False
 	p->UseFbRuntimeLibrary = True
@@ -1969,6 +1976,24 @@ Private Function ParseCommandLine( _
 
 					Case "native"
 						p->FileSubsystem = SUBSYSTEM_NATIVE
+
+				End Select
+
+			Case "-makekind"
+
+				Select Case sValue
+
+					Case "gnumake"
+						p->MakeKind = MakeUtilGnuMake
+						p->ParamSeparator = "//"
+						p->PathSeparator = "/"
+						p->MovePathSeparator = "\\"
+
+					Case "mingw"
+						p->MakeKind = MakeUtilMingw
+						p->ParamSeparator = "/"
+						p->PathSeparator = "/"
+						p->MovePathSeparator = "\\"
 
 				End Select
 
@@ -2127,7 +2152,7 @@ Private Sub PrintAllParameters( _
 			ByVal p As Parameter Ptr _
 	)
 
-	Print "Makefile generator version 1.1"
+	Print "Makefile generator version 1.2"
 	Print "Source folder", p->SourceFolder
 	Dim FbcName As String = BuildPath(p->CompilerPath, p->FbcCompilerName)
 	Print "Compiler name", FbcName
