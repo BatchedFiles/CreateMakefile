@@ -625,8 +625,7 @@ Private Function WriteSetenvWin32( _
 	Print #oStream, "set LD_SCRIPT=""%LIB_DIR%\fbextra.x"""
 	Print #oStream,
 
-	Print #oStream, "rem Parameter separator for gnu make //"
-	Print #oStream, "rem or / for mingw32-make"
+	Print #oStream, "rem Parameter separator for gnu make // or / for mingw32-make"
 	Print #oStream, "set PARAM_SEP=" & p->ParamSeparator
 	Print #oStream, "set PATH_SEP=" & p->PathSeparator
 	Print #oStream, "set MOVE_PATH_SEP=" & p->MovePathSeparator
